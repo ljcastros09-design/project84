@@ -1809,6 +1809,7 @@
 
     window.startGoatDialog = function () {
       GAME.setDialogActive(true);
+      GAME.setCabraExplaining(true);
       document.getElementById('cabra').src = 'assets/personajes/creature/cabra-explicando.png';
       document.getElementById('dialog-speaker').textContent = DIALOG_SPEAKER[lang] || DIALOG_SPEAKER.es;
       document.getElementById('dialog-advance').textContent = DIALOG_ADVANCE[lang] || DIALOG_ADVANCE.es;
@@ -1872,6 +1873,7 @@
       document.getElementById('dialog-box').classList.remove('active');
       if (noPhoneMode) smsTimers.forEach(clearTimeout);
       smsTimers = [];
+      GAME.setCabraExplaining(false);
       const cabraImg = document.getElementById('cabra');
       cabraImg.src = 'assets/personajes/creature/standing-cabra.png';
       const glowEl  = document.getElementById('cabra-glow');

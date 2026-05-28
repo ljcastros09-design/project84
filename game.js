@@ -220,6 +220,7 @@ const GAME = (() => {
   let cabraEl        = null;
   let cabraGlowEl    = null;
   let cabraGlowEl2   = null;
+  let cabraExplaining = false;
 
   // ── Preload cache (keep refs alive so browser doesn't cancel downloads) ──
   const _imgCache = [];
@@ -701,6 +702,7 @@ const GAME = (() => {
             if (giantCaught) {
               carcelState  = 'trapped';
               giganteState = 'trapped';
+              carcelEl.style.display = 'none';
               giganteEl.src = 'assets/personajes/gigante/gigante-encerrado.png';
               if (audioGiganteGrune) {
                 audioGiganteGrune.currentTime = 0;
@@ -846,7 +848,7 @@ const GAME = (() => {
       //   explicando: ojo1=(30,38) ojo2=(34,37)
       if (cabraEl && cabraEl.style.display !== 'none') {
         const vh    = window.innerHeight / 100;
-        const isExp = cabraEl.src.includes('explicando');
+        const isExp = cabraExplaining;
         const baseX = CABRA_WORLD_X - cameraX;
         const e1x = baseX    + (isExp ? 28 : 21) * vh;
         const e1y = groundPx + (isExp ? 37 : 36) * vh;
@@ -993,6 +995,11 @@ const GAME = (() => {
     [cabraGlowEl, cabraGlowEl2].forEach(el => {
       if (el) { el.style.display = 'block'; el.style.opacity = '1'; }
     });
+    cabraExplaining = false;
+    preload([
+      'assets/personajes/creature/standing-cabra.png',
+      'assets/personajes/creature/cabra-explicando.png',
+    ]);
 
     // Audio
     const audioPhase2 = document.getElementById('audio-phase2');
@@ -1071,6 +1078,10 @@ const GAME = (() => {
     if (!active && audioFootstep) {
       walkingOnGround = false;
     }
+  }
+
+  function setCabraExplaining(val) {
+    cabraExplaining = val;
   }
 
   function solveReja() {
@@ -1289,5 +1300,5 @@ const GAME = (() => {
     requestAnimationFrame(loop);
   }
 
-  return { startPhase1, stopGame, solveReja, resumePhase1, startPhase2, setDialogActive, startLeftPath, startRightPath };
+  return { startPhase1, stopGame, solveReja, resumePhase1, startPhase2, setDialogActive, setCabraExplaining, startLeftPath, startRightPath };
 })();
