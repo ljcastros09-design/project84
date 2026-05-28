@@ -4,6 +4,14 @@ const express = require('express');
 const cors    = require('cors');
 const twilio  = require('twilio');
 
+// Log de errores no capturados
+process.on('uncaughtException',  err  => console.error('[crash] uncaughtException:', err));
+process.on('unhandledRejection', err  => console.error('[crash] unhandledRejection:', err));
+
+const STATIC_DIR = path.resolve(__dirname, '..');
+console.log('[init] static dir:', STATIC_DIR);
+console.log('[init] SID present:', !!process.env.TWILIO_ACCOUNT_SID);
+
 const app    = express();
 const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 const FROM   = process.env.TWILIO_PHONE_NUMBER;
@@ -12,7 +20,12 @@ app.use(cors());
 app.use(express.json());
 
 // Sirve el juego desde la carpeta raíz del proyecto
-app.use(express.static(path.join(__dirname, '..')));
+app.use(express.static(STATIC_DIR));
+
+// Fallback explícito para la raíz
+app.get('/', (req, res) => {
+  res.sendFile(path.join(STATIC_DIR, 'index.html'));
+});
 
 // Número del jugador (en memoria por sesión)
 let playerPhone = null;
