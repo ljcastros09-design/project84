@@ -221,9 +221,22 @@ const GAME = (() => {
   let cabraGlowEl    = null;
   let cabraGlowEl2   = null;
 
+  // ── Preload cache (keep refs alive so browser doesn't cancel downloads) ──
+  const _imgCache = [];
+  let framesReady = false;
+
   // ── Helpers ───────────────────────────────────
   function preload(paths) {
-    paths.forEach(src => { const img = new Image(); img.src = src; });
+    return new Promise(resolve => {
+      let n = paths.length;
+      if (!n) { resolve(); return; }
+      paths.forEach(src => {
+        const img = new Image();
+        _imgCache.push(img);
+        img.onload = img.onerror = () => { if (!--n) resolve(); };
+        img.src = src;
+      });
+    });
   }
 
   function fadeOut(audio, ms = 800) {
@@ -879,22 +892,24 @@ const GAME = (() => {
 
     // ── Animación ──
     animAccum += dt;
-    if (isHighJump) {
-      if (animAccum >= 1 / HIGH_FPS) {
+    if (framesReady) {
+      if (isHighJump) {
+        if (animAccum >= 1 / HIGH_FPS) {
+          animAccum = 0;
+          highFrame = Math.min(highFrame + 1, FRAMES_HIGH.length - 1);
+        }
+        setFrame(FRAMES_HIGH[highFrame]);
+      } else if (moving) {
+        if (animAccum >= 1 / WALK_FPS) {
+          animAccum = 0;
+          walkFrame = (walkFrame + 1) % FRAMES_WALK.length;
+        }
+        setFrame(FRAMES_WALK[walkFrame]);
+      } else {
+        setFrame(FRAME_STAND);
+        walkFrame = 0;
         animAccum = 0;
-        highFrame = Math.min(highFrame + 1, FRAMES_HIGH.length - 1);
       }
-      setFrame(FRAMES_HIGH[highFrame]);
-    } else if (moving) {
-      if (animAccum >= 1 / WALK_FPS) {
-        animAccum = 0;
-        walkFrame = (walkFrame + 1) % FRAMES_WALK.length;
-      }
-      setFrame(FRAMES_WALK[walkFrame]);
-    } else {
-      setFrame(FRAME_STAND);
-      walkFrame = 0;
-      animAccum = 0;
     }
   }
 
@@ -913,7 +928,8 @@ const GAME = (() => {
     p1WorldStopped = false; p1AutoWalk = false; p1EndTriggered = false;
     goatVideoTriggered = false; frozenCameraX = -1;
 
-    preload([FRAME_STAND, ...FRAMES_WALK, ...FRAMES_HIGH]);
+    framesReady = false;
+    preload([FRAME_STAND, ...FRAMES_WALK, ...FRAMES_HIGH]).then(() => { framesReady = true; });
     audioFootstep.volume = 0.55;
     fadeIn(audioPhase1, 0.65, 1500);
     setTimeout(showAnnouncement, 1200);
@@ -1249,6 +1265,24 @@ const GAME = (() => {
       raicesEl.style.transform  = 'translateY(100%)';
       raicesEl.style.display    = 'block';
     }
+
+    // Preload all right-path assets so quick-transition frames (stomp 0.3s) are cached
+    preload([
+      'assets/personajes/gigante/gigante-caminando/gigange-1.png',
+      'assets/personajes/gigante/gigante-caminando/gigante-2.png',
+      'assets/personajes/gigante/gigante-caminando/gigante-3.png',
+      'assets/personajes/gigante/gigante-caminando/gigante-4.png',
+      'assets/personajes/gigante/gigante-frente.png',
+      'assets/personajes/gigante/gigante-pie-arriba.png',
+      'assets/personajes/gigante/gigante-aplastando.png',
+      'assets/personajes/gigante/gigante-encerrado.png',
+      'assets/obstaculos/raices/raices-estaticas.png',
+      'assets/obstaculos/raices/raices-moviendose.png',
+      'assets/obstaculos/gigante/palanca-activada.png',
+      'assets/obstaculos/gigante/palanca-desactivada.png',
+      'assets/obstaculos/gigante/carcel-gigante.png',
+      'assets/obstaculos/columnas/columna-gigante.png',
+    ]);
 
     running = true;
     lastTs  = performance.now();
