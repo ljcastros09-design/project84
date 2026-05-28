@@ -932,6 +932,19 @@ const GAME = (() => {
 
     framesReady = false;
     preload([FRAME_STAND, ...FRAMES_WALK, ...FRAMES_HIGH]).then(() => { framesReady = true; });
+    // Preload all phase backgrounds so they show instantly when phases start
+    preload([
+      'assets/fondos/escenario1-pantano/capa1-fondo.png',
+      'assets/fondos/escenario1-pantano/capa2-medio.png',
+      'assets/fondos/escenario1-pantano/capa3-frente.png',
+      'assets/fondos/escenario4-cabra/capa1-fondo.jpg',
+      'assets/fondos/escenario4-cabra/capa2-frente.jpg',
+      'assets/fondos/escenario-granero/capa1-fondo.jpg',
+      'assets/fondos/escenario-granero/capa2-frente.jpg',
+      'assets/fondos/escenario2-bosque/capa1-fondo.png',
+      'assets/fondos/escenario2-bosque/capa2-medio.png',
+      'assets/fondos/escenario2-bosque/capa3-frente.png',
+    ]);
     audioFootstep.volume = 0.55;
     fadeIn(audioPhase1, 0.65, 1500);
     setTimeout(showAnnouncement, 1200);

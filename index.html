@@ -1202,7 +1202,7 @@
 
   <!-- PANTALLA INTRO (video del conejo entrando al mundo) -->
   <div id="screen-intro" class="screen hidden">
-    <video id="intro-video" src="assets/videos/start_rabbit.mp4" playsinline></video>
+    <video id="intro-video" src="assets/videos/start_rabbit.mp4" playsinline preload="auto"></video>
   </div>
 
   <!-- PANTALLA JUEGO -->
@@ -1261,17 +1261,17 @@
 
   <!-- Fase 2: video de la cabra -->
   <div id="screen-goat">
-    <video id="goat-video" src="assets/videos/goat.mp4" playsinline></video>
+    <video id="goat-video" src="assets/videos/goat.mp4" playsinline preload="auto"></video>
   </div>
 
   <!-- Video camino derecho -->
   <div id="screen-walking-video">
-    <video id="walking-video" src="assets/videos/walking_figures.mp4" playsinline></video>
+    <video id="walking-video" src="assets/videos/walking_figures.mp4" playsinline preload="auto"></video>
   </div>
 
   <!-- Final camino derecho (bueno) -->
   <div id="screen-good-ending">
-    <video id="ending-video" src="assets/videos/ending.mp4" playsinline></video>
+    <video id="ending-video" src="assets/videos/ending.mp4" playsinline preload="auto"></video>
     <div id="good-end-text">
       <p id="good-end-message">Siempre supiste que podías parar.<br>Todo sistema de control depende<br>de que tú decidas no hacerlo.</p>
       <button id="btn-good-restart">VOLVER AL INICIO</button>
@@ -1280,7 +1280,7 @@
 
   <!-- Final camino izquierdo -->
   <div id="screen-bad-ending">
-    <video id="falling-video" src="assets/videos/falling_rabit.mp4" playsinline></video>
+    <video id="falling-video" src="assets/videos/falling_rabit.mp4" playsinline preload="auto"></video>
     <div id="bad-end-text">
       <p id="bad-end-message"></p>
       <button id="btn-bad-restart"></button>
@@ -1289,7 +1289,7 @@
 
   <!-- Fase 3: La Decisión -->
   <div id="screen-bifurcacion">
-    <video id="two-ways-video" src="assets/videos/two_ways.mp4" playsinline></video>
+    <video id="two-ways-video" src="assets/videos/two_ways.mp4" playsinline preload="auto"></video>
     <div id="bifurcacion-bg"></div>
     <div id="decide-text">DECIDE.</div>
     <div id="bifurcacion-choices">
@@ -1429,6 +1429,16 @@
       }
     }, { once: true });
 
+    // iOS/iPad: unlock all media elements on first real touch so later
+    // programmatic play() calls (inside setTimeout / fetch callbacks) work
+    document.addEventListener('touchstart', function unlockMedia() {
+      document.querySelectorAll('video, audio').forEach(el => {
+        const m = el.muted;
+        el.muted = true;
+        el.play().then(() => { el.pause(); el.currentTime = 0; el.muted = m; }).catch(() => {});
+      });
+    }, { once: true, passive: true });
+
     const screenIntro = document.getElementById('screen-intro');
     const introVideo  = document.getElementById('intro-video');
     const screenGame  = document.getElementById('screen-game');
@@ -1453,15 +1463,22 @@
       screenIntro.classList.remove('hidden');
       document.getElementById('bg-video').style.display = 'none';
 
-      // Reproducir video intro
-      introVideo.play().catch(() => {});
-
-      // Al terminar el video → arrancar Phase 1
-      introVideo.addEventListener('ended', () => {
+      // Reproducir video intro (fallback: skip to Phase 1 if iOS blocks)
+      let phase1Started = false;
+      function goToPhase1() {
+        if (phase1Started) return;
+        phase1Started = true;
         screenIntro.classList.add('hidden');
         screenGame.style.display = 'block';
         GAME.startPhase1(lang);
         showControlsHint();
+      }
+      introVideo.currentTime = 0;
+      introVideo.play().catch(() => goToPhase1());
+
+      // Al terminar el video → arrancar Phase 1
+      introVideo.addEventListener('ended', () => {
+        goToPhase1();
       }, { once: true });
     };
 
@@ -1764,7 +1781,13 @@
       fade.classList.add('visible');
       setTimeout(() => {
         screenGoat.classList.add('active');
-        goatVideo.play().catch(() => {});
+        goatVideo.currentTime = 0;
+        goatVideo.play().catch(() => {
+          // iOS blocked autoplay: skip video, go straight to phase 2
+          screenGoat.classList.remove('active');
+          screenGame.style.display = 'block';
+          GAME.startPhase2(lang);
+        });
         fade.classList.remove('visible');
       }, 700);
     };
@@ -2169,13 +2192,17 @@
     }
 
     window.triggerBifurcacion = function () {
-      // Music keeps playing (audio-phase2 continues per spec)
-      // Fade to black, then show bifurcacion screen
       fade.classList.add('visible');
       setTimeout(() => {
         screenGame.style.display = 'none';
         screenBif.classList.add('active');
-        twoWaysVideo.play().catch(() => {});
+        twoWaysVideo.currentTime = 0;
+        twoWaysVideo.play().catch(() => {
+          // iOS blocked: skip video, show bifurcacion UI directly
+          bifurcBg.style.display  = 'block';
+          decideText.style.display = 'block';
+          bifChoices.style.display = 'flex';
+        });
         fade.classList.remove('visible');
       }, 700);
     };
@@ -2213,7 +2240,12 @@
           const walkVideo  = document.getElementById('walking-video');
           walkScreen.classList.add('active');
           walkVideo.currentTime = 0;
-          walkVideo.play().catch(() => {});
+          walkVideo.play().catch(() => {
+            // iOS blocked: skip video, start right path directly
+            walkScreen.classList.remove('active');
+            screenGame.style.display = 'block';
+            GAME.startRightPath(lang);
+          });
           fade.classList.remove('visible');
         }, 700);
       }
