@@ -1109,6 +1109,31 @@
       font-family: 'BebasNeue', sans-serif;
     }
 
+    /* ── BOTÓN VOLVER AL INICIO ── */
+    #btn-home {
+      position: fixed;
+      top: 16px;
+      right: 20px;
+      z-index: 190;
+      font-family: 'BebasNeue', sans-serif;
+      font-size: 15px;
+      letter-spacing: 0.12em;
+      color: rgba(255,255,255,0.45);
+      background: rgba(0,0,0,0.30);
+      border: 1px solid rgba(255,255,255,0.15);
+      padding: 6px 14px;
+      cursor: pointer;
+      outline: none;
+      display: none;
+      transition: color 0.2s, border-color 0.2s, background 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #btn-home:hover, #btn-home:active {
+      color: rgba(255,255,255,0.9);
+      border-color: rgba(255,255,255,0.40);
+      background: rgba(0,0,0,0.55);
+    }
+
     /* ── FADE ── */
     #fade {
       position: fixed;
@@ -1140,6 +1165,7 @@
 </head>
 <body>
 
+  <button id="btn-home" data-i18n="home">← INICIO</button>
   <div id="fade"></div>
 
   <div id="sms-display"></div>
@@ -1370,6 +1396,7 @@
         errServer:       'Error del servidor. Intenta de nuevo.',
         errNoServer:     'El servidor no está activo. Inicia el servidor e intenta de nuevo.',
         skipPhone:       'Continuar sin celular',
+        home:            '← INICIO',
       },
       en: {
         begin:           'START',
@@ -1384,6 +1411,7 @@
         errServer:       'Server error. Please try again.',
         errNoServer:     'Server is not running. Start the server and try again.',
         skipPhone:       'Continue without phone',
+        home:            '← START',
       }
     };
 
@@ -1443,6 +1471,10 @@
     const introVideo  = document.getElementById('intro-video');
     const screenGame  = document.getElementById('screen-game');
 
+    const btnHome = document.getElementById('btn-home');
+    btnHome.addEventListener('click', () => { window.location.reload(); });
+    function showHomeBtn() { btnHome.style.display = 'block'; }
+
     function showScreen(el) {
       [screenStart, screenForm, screenConfirm, screenIntro].forEach(s => s.classList.add('hidden'));
       // screen-game uses 'active' not hidden, managed separately
@@ -1473,6 +1505,7 @@
         GAME.startPhase1(lang);
         showControlsHint();
       }
+      showHomeBtn();
       introVideo.currentTime = 0;
       introVideo.play().catch(() => goToPhase1());
 
