@@ -1,0 +1,2326 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PROJECT 84</title>
+  <style>
+    @font-face {
+      font-family: 'BebasNeue';
+      src: url('assets/fonts/BebasNeue-Regular.ttf') format('truetype');
+    }
+    @font-face {
+      font-family: 'Barlow';
+      src: url('assets/fonts/Barlow-Medium.ttf') format('truetype');
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: #000;
+      overflow: hidden;
+    }
+
+    /* ── VIDEO DE FONDO ── */
+    #bg-video {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 0;
+      opacity: 0.75;
+    }
+
+    /* ── SELECTOR DE IDIOMA (solo pantalla inicio) ── */
+    #lang-toggle {
+      position: absolute;
+      top: 24px;
+      right: 28px;
+      display: flex;
+      align-items: center;
+      gap: 0;
+      border: 1px solid rgba(255,255,255,0.3);
+      overflow: hidden;
+    }
+
+    .lang-btn {
+      font-family: 'Barlow', sans-serif;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      color: rgba(255,255,255,0.45);
+      background: transparent;
+      border: none;
+      padding: 7px 14px;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      outline: none;
+    }
+
+    .lang-btn.active {
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+    }
+
+    .lang-separator {
+      width: 1px;
+      height: 28px;
+      background: rgba(255,255,255,0.3);
+    }
+
+    /* ── PANTALLAS ── */
+    .screen {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .screen.hidden { display: none; }
+
+    /* ── PANTALLA 1: INICIO ── */
+    #title {
+      font-family: 'BebasNeue', sans-serif;
+      font-size: clamp(72px, 12vw, 160px);
+      color: #fff;
+      letter-spacing: 0.12em;
+      line-height: 1;
+      text-shadow:
+        0 0 40px rgba(255,255,255,0.15),
+        0 0 80px rgba(255,255,255,0.06);
+      user-select: none;
+      margin-bottom: 48px;
+    }
+
+    .btn {
+      font-family: 'Barlow', sans-serif;
+      font-size: clamp(13px, 1.8vw, 18px);
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: #fff;
+      background: transparent;
+      border: 1.5px solid rgba(255,255,255,0.5);
+      padding: 16px 56px;
+      cursor: pointer;
+      transition: background 0.25s, border-color 0.25s;
+      outline: none;
+    }
+
+    .btn:hover  { background: rgba(255,255,255,0.08); border-color: #fff; }
+    .btn:active { background: rgba(255,255,255,0.18); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ── PANTALLA 2: FORMULARIO ── */
+    .form-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 28px;
+      max-width: 480px;
+      width: 100%;
+    }
+
+    .form-label {
+      font-family: 'Barlow', sans-serif;
+      font-size: clamp(13px, 1.6vw, 17px);
+      color: rgba(255,255,255,0.75);
+      letter-spacing: 0.06em;
+      line-height: 1.8;
+    }
+
+    .phone-row {
+      display: flex;
+      width: 100%;
+      border-bottom: 1.5px solid rgba(255,255,255,0.4);
+      transition: border-color 0.2s;
+    }
+
+    .phone-row:focus-within { border-color: #fff; }
+
+    #country-code {
+      font-family: 'Barlow', sans-serif;
+      font-size: clamp(16px, 2vw, 22px);
+      color: #fff;
+      background: transparent;
+      border: none;
+      outline: none;
+      width: 80px;
+      padding: 10px 8px 10px 0;
+      text-align: center;
+      letter-spacing: 0.05em;
+    }
+
+    .divider {
+      width: 1px;
+      background: rgba(255,255,255,0.3);
+      align-self: stretch;
+      margin: 8px 0;
+    }
+
+    #phone-number {
+      font-family: 'Barlow', sans-serif;
+      font-size: clamp(16px, 2vw, 22px);
+      color: #fff;
+      background: transparent;
+      border: none;
+      outline: none;
+      flex: 1;
+      padding: 10px 0 10px 16px;
+      letter-spacing: 0.08em;
+      -moz-appearance: textfield;
+      appearance: textfield;
+    }
+
+    #phone-number::-webkit-outer-spin-button,
+    #phone-number::-webkit-inner-spin-button { -webkit-appearance: none; }
+    #phone-number::placeholder { color: rgba(255,255,255,0.3); }
+
+    .form-hint {
+      font-family: 'Barlow', sans-serif;
+      font-size: clamp(11px, 1.2vw, 13px);
+      color: rgba(255,255,255,0.35);
+      letter-spacing: 0.06em;
+      margin-top: -12px;
+    }
+
+    #form-error {
+      font-family: 'Barlow', sans-serif;
+      font-size: 13px;
+      letter-spacing: 0.05em;
+      min-height: 18px;
+      margin-top: -12px;
+    }
+
+    #form-error.error   { color: #ff5555; }
+    #form-error.warning { color: #ffbb33; }
+
+    /* ── PANTALLA 3: CONFIRMACIÓN ── */
+    #screen-confirm { gap: 24px; }
+
+    .confirm-icon {
+      width: 50px;
+      height: 50px;
+      border: 1.5px solid rgba(255,255,255,0.5);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .confirm-icon svg {
+      width: 22px;
+      height: 22px;
+      stroke: #fff;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .confirm-title {
+      font-family: 'BebasNeue', sans-serif;
+      font-size: clamp(28px, 4vw, 48px);
+      color: #fff;
+      letter-spacing: 0.15em;
+    }
+
+    .confirm-text {
+      font-family: 'Barlow', sans-serif;
+      font-size: clamp(13px, 1.5vw, 16px);
+      color: rgba(255,255,255,0.65);
+      letter-spacing: 0.06em;
+      line-height: 1.7;
+      max-width: 360px;
+    }
+
+    /* ── PANTALLA INTRO (video start_rabbit) ── */
+    #screen-intro {
+      background: #000;
+    }
+    #screen-intro.hidden { display: none; }
+
+    /* ── PANTALLA BIFURCACIÓN ── */
+    #screen-bifurcacion {
+      position: fixed;
+      inset: 0;
+      z-index: 90;
+      background: #000;
+      display: none;
+    }
+
+    #screen-bifurcacion.active { display: block; }
+
+    #two-ways-video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    #bifurcacion-bg {
+      position: absolute;
+      inset: 0;
+      background: url('assets/fondos/bifurcacion.jpg') center/cover no-repeat;
+      display: none;
+    }
+
+    #decide-text {
+      position: absolute;
+      top: 56px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'BebasNeue', sans-serif;
+      font-size: clamp(64px, 10vw, 128px);
+      color: #fff;
+      letter-spacing: 0.18em;
+      text-shadow: 0 0 60px rgba(255,255,255,0.25);
+      opacity: 0;
+      animation: decideFadeIn 1.5s ease 0.3s forwards;
+      z-index: 95;
+      pointer-events: none;
+      display: none;
+    }
+
+    @keyframes decideFadeIn {
+      from { opacity: 0; transform: translateX(-50%) translateY(-12px); }
+      to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+
+    #bifurcacion-choices {
+      position: absolute;
+      inset: 0;
+      display: none;
+      z-index: 96;
+    }
+
+    #bifurcacion-choices.active { display: flex; }
+
+    .choice-zone {
+      flex: 1;
+      cursor: pointer;
+      transition: background 0.25s;
+    }
+
+    .choice-zone:hover { background: rgba(255,255,255,0.05); }
+
+    /* ── PANTALLA CABRA ── */
+    #screen-goat {
+      position: fixed;
+      inset: 0;
+      z-index: 90;
+      background: #000;
+      display: none;
+    }
+
+    #screen-goat.active { display: block; }
+
+    #goat-video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    #intro-video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* ── PANTALLA JUEGO ── */
+    #screen-game {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      display: none;
+      z-index: 1;
+      background: #000;
+    }
+    #screen-game.active { display: block; }
+
+    /* Capas de parallax */
+    .layer {
+      position: absolute;
+      inset: 0;
+      background-repeat: repeat-x;
+      background-size: auto 100%;
+      background-position: left bottom;
+    }
+
+    #layer1 { background-image: url('assets/fondos/escenario1-pantano/capa1-fondo.png'); z-index: 1; }
+    #layer2 { background-image: url('assets/fondos/escenario1-pantano/capa2-medio.png'); z-index: 2; }
+    #layer3 { background-image: url('assets/fondos/escenario1-pantano/capa3-frente.png'); z-index: 3; background-size: auto 46%; mix-blend-mode: multiply; }
+
+    /* Conejo */
+    #rabbit {
+      position: absolute;
+      height: 30vh;
+      width: auto;
+      z-index: 20;
+      mix-blend-mode: screen;
+      filter: invert(1) brightness(0.68);
+      transform-origin: center bottom;
+      user-select: none;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    /* Anuncio inicial */
+    #announcement {
+      position: absolute;
+      top: 38%;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      font-family: 'Barlow', sans-serif;
+      font-size: clamp(14px, 2vw, 20px);
+      color: #fff;
+      text-align: center;
+      letter-spacing: 0.08em;
+      line-height: 1.9;
+      text-shadow: 0 2px 24px rgba(0,0,0,0.9);
+      opacity: 0;
+      transition: opacity 1.2s ease;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    /* ── OBSTÁCULOS ── */
+    .obs-espinas {
+      position: absolute;
+      height: 46vh;
+      width: auto;
+      bottom: -5vh;     /* base parcialmente oculta, puntas bien visibles */
+      z-index: 5;
+      filter: invert(1);
+      mix-blend-mode: screen;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    /* ── OBSTÁCULO 2: REJA, PALANCA, INTERACT ── */
+    #reja {
+      position: absolute;
+      height: 100vh;
+      width: auto;
+      bottom: 0;
+      z-index: 6;
+      mix-blend-mode: multiply;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    #palanca {
+      position: absolute;
+      height: 100vh;
+      width: auto;
+      bottom: 0;
+      z-index: 6;
+      mix-blend-mode: multiply;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    #interact-hint {
+      position: absolute;
+      z-index: 10;
+      font-family: 'Barlow', sans-serif;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      color: rgba(255,255,255,0.9);
+      background: rgba(0,0,0,0.6);
+      border: 1px solid rgba(255,255,255,0.35);
+      border-radius: 4px;
+      padding: 4px 10px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    /* ── ZOMBIE (camino izquierdo) ── */
+    #zombie-rabbit {
+      position: absolute;
+      height: 80vh;
+      width: auto;
+      bottom: 0;
+      z-index: 6;
+      mix-blend-mode: multiply;
+      pointer-events: none;
+      user-select: none;
+      display: none;
+    }
+
+    /* ── COLUMNAS (camino derecho) ── */
+    .columna {
+      position: absolute;
+      height: 90vh;
+      width: auto;
+      top: 0;
+      z-index: 6;
+      mix-blend-mode: multiply;
+      pointer-events: none;
+      user-select: none;
+      display: none;
+      transform: translateY(-100%);
+      transform-origin: top center;
+    }
+
+    /* ── PALANCA GIGANTE (camino derecho) ── */
+    #palanca-gigante {
+      position: absolute;
+      height: 18vh;
+      width: auto;
+      bottom: 7vh;
+      z-index: 2;
+      filter: invert(1);
+      mix-blend-mode: screen;
+      pointer-events: none;
+      user-select: none;
+      display: none;
+    }
+
+    /* ── JAULA GIGANTE (camino derecho) ── */
+    #carcel-gigante {
+      position: absolute;
+      height: 90vh;
+      width: auto;
+      z-index: 8;
+      filter: invert(1);
+      mix-blend-mode: screen;
+      pointer-events: none;
+      user-select: none;
+      display: none;
+    }
+
+    /* ── GIGANTE (jefe final, camino derecho) ── */
+    #gigante {
+      position: absolute;
+      height: 90vh;
+      width: auto;
+      bottom: 7vh;
+      z-index: 6;
+      mix-blend-mode: screen;
+      filter: invert(1) grayscale(1) brightness(0.55);
+      pointer-events: none;
+      user-select: none;
+      display: none;
+    }
+
+    /* ── RAÍCES (camino derecho) ── */
+    #raices {
+      position: absolute;
+      height: 45vh;
+      width: auto;
+      bottom: 0;
+      z-index: 5;
+      pointer-events: none;
+      user-select: none;
+      display: none;
+      transform: translateY(100%);
+      transform-origin: bottom center;
+      transition: transform 0.3s cubic-bezier(0.1, 0, 0.2, 1);
+      mix-blend-mode: screen;
+      filter: grayscale(100%) invert(1) brightness(1.8);
+      -webkit-mask-image: linear-gradient(to top, transparent 30%, black 90%);
+      mask-image: linear-gradient(to top, transparent 30%, black 90%);
+    }
+
+    /* ── ÁRBOL (camino izquierdo) ── */
+    #arbol {
+      position: absolute;
+      height: 150vh;
+      width: auto;
+      bottom: 0;
+      z-index: 5;
+      mix-blend-mode: multiply;
+      pointer-events: none;
+      user-select: none;
+      display: none;
+    }
+
+    /* ── CABRA ── */
+    #cabra {
+      position: absolute;
+      height: 55vh;
+      width: auto;
+      z-index: 5;
+      mix-blend-mode: multiply;
+      pointer-events: none;
+      user-select: none;
+      display: none;
+    }
+
+    /* ── OJOS DE LA CABRA (glow overlay) ── */
+    #cabra-glow,
+    #cabra-glow-2 {
+      position: absolute;
+      width: 16px;
+      height: 10px;
+      border-radius: 50%;
+      pointer-events: none;
+      user-select: none;
+      display: none;
+      z-index: 7;
+      background: radial-gradient(ellipse at center,
+        rgba(255,230,160,1)   0%,
+        rgba(255,170,50,0.5)  50%,
+        transparent           78%);
+      mix-blend-mode: screen;
+      transform: translate(-50%, 50%);
+      animation: eyePulse 2.8s ease-in-out infinite;
+    }
+    @keyframes eyePulse {
+      0%, 100% { opacity: 0.7;  transform: translate(-50%, 50%) scale(1);    }
+      50%       { opacity: 1;   transform: translate(-50%, 50%) scale(1.2);  }
+    }
+
+    /* ── DIÁLOGO ── */
+    #dialog-box {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 80;
+      display: none;
+      padding: 32px 10vw 48px;
+      background: linear-gradient(transparent, rgba(0,0,0,0.88) 28%);
+      pointer-events: all;
+      cursor: pointer;
+    }
+
+    #dialog-box.active { display: block; }
+
+    #dialog-speaker {
+      font-family: 'BebasNeue', sans-serif;
+      font-size: 12px;
+      letter-spacing: 0.35em;
+      color: rgba(255,255,255,0.35);
+      margin-bottom: 12px;
+    }
+
+    #dialog-text {
+      font-family: 'Barlow', sans-serif;
+      font-size: clamp(15px, 2vw, 21px);
+      color: rgba(255,255,255,0.92);
+      letter-spacing: 0.04em;
+      line-height: 1.75;
+      min-height: 2.5em;
+    }
+
+    #dialog-advance {
+      font-family: 'Barlow', sans-serif;
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      color: rgba(255,255,255,0.28);
+      margin-top: 14px;
+      opacity: 0;
+      transition: opacity 0.4s;
+      animation: blinkAdv 1.6s ease infinite;
+    }
+
+    @keyframes blinkAdv {
+      0%, 100% { opacity: 0.28; }
+      50%       { opacity: 0.7; }
+    }
+
+    /* ── PANEL DE CÓDIGO ── */
+    #code-panel {
+      position: fixed;
+      inset: 0;
+      z-index: 150;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.8);
+    }
+
+    #code-panel.active { display: flex; }
+
+    .cp-box {
+      position: relative;
+      max-width: 460px;
+      width: 90%;
+      background-image: url('assets/obstaculos/panel-codigo.jpg');
+      background-size: cover;
+      background-position: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 22px;
+      padding: 52px 44px 44px;
+    }
+
+    .cp-box::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.58);
+      z-index: 0;
+    }
+
+    .cp-box > * { position: relative; z-index: 1; }
+
+    .cp-title {
+      font-family: 'BebasNeue', sans-serif;
+      font-size: clamp(22px, 3vw, 34px);
+      color: #fff;
+      letter-spacing: 0.2em;
+      text-align: center;
+    }
+
+    .cp-question {
+      font-family: 'Barlow', sans-serif;
+      font-size: clamp(13px, 1.7vw, 16px);
+      color: rgba(255,255,255,0.78);
+      letter-spacing: 0.05em;
+      line-height: 1.8;
+      text-align: center;
+    }
+
+    #cp-input {
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid rgba(255,255,255,0.5);
+      color: #fff;
+      font-family: 'BebasNeue', sans-serif;
+      font-size: 30px;
+      letter-spacing: 0.42em;
+      text-align: center;
+      width: 260px;
+      max-width: 100%;
+      outline: none;
+      text-transform: uppercase;
+      padding: 6px 0;
+      caret-color: rgba(255,255,255,0.5);
+    }
+
+    .cp-attempts {
+      font-family: 'Barlow', sans-serif;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      color: rgba(255,255,255,0.38);
+      text-transform: uppercase;
+    }
+
+    .cp-hint {
+      font-family: 'Barlow', sans-serif;
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      color: rgba(255,255,255,0.62);
+      line-height: 1.7;
+      text-align: center;
+      min-height: 48px;
+      max-width: 340px;
+      font-style: italic;
+    }
+
+    .cp-btn {
+      font-family: 'Barlow', sans-serif;
+      font-size: 13px;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: #fff;
+      background: transparent;
+      border: 1.5px solid rgba(255,255,255,0.45);
+      padding: 13px 44px;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+      outline: none;
+      margin-top: 4px;
+    }
+
+    .cp-btn:hover     { background: rgba(255,255,255,0.08); border-color: #fff; }
+    .cp-btn:disabled  { opacity: 0.3; cursor: not-allowed; }
+
+    #cp-hint-btn {
+      font-size: 11px;
+      padding: 9px 28px;
+      border-color: rgba(255,255,255,0.25);
+      color: rgba(255,255,255,0.7);
+      letter-spacing: 0.3em;
+    }
+    #cp-hint-btn:hover:not(:disabled) { border-color: rgba(255,255,255,0.6); color: #fff; }
+
+
+    /* ── BOTÓN MUTE ── */
+    #btn-mute {
+      position: fixed;
+      bottom: 22px;
+      right: 24px;
+      z-index: 50;
+      width: 38px;
+      height: 38px;
+      background: rgba(0,0,0,0.45);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s;
+      outline: none;
+      padding: 0;
+    }
+
+    #btn-mute:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.5); }
+    #btn-mute svg { width: 18px; height: 18px; stroke: #fff; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* ── TUTORIAL DE CONTROLES ── */
+    #controls-hint {
+      position: absolute;
+      bottom: 34%;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      display: flex;
+      align-items: flex-end;
+      gap: 20px;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    #controls-hint.visible { opacity: 1; }
+
+    .ctrl-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .ctrl-keys {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .key-icon {
+      min-width: 30px;
+      height: 30px;
+      border: 1.5px solid rgba(255,255,255,0.55);
+      border-bottom-width: 3px;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Barlow', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.9);
+      background: rgba(255,255,255,0.07);
+      padding: 0 7px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.5);
+    }
+
+    .key-icon.wide { min-width: 70px; font-size: 10px; letter-spacing: 0.1em; }
+
+    .key-x2 {
+      font-family: 'Barlow', sans-serif;
+      font-size: 11px;
+      color: rgba(255,255,255,0.35);
+      align-self: center;
+      margin-left: 2px;
+    }
+
+    .ctrl-label {
+      font-family: 'Barlow', sans-serif;
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      color: rgba(255,255,255,0.35);
+      text-transform: uppercase;
+    }
+
+    .ctrl-sep {
+      width: 1px;
+      height: 38px;
+      background: rgba(255,255,255,0.08);
+      align-self: center;
+      margin-bottom: 18px;
+    }
+
+    /* ── SMS EN PANTALLA (modo sin celular) ── */
+    #sms-display {
+      position: fixed;
+      top: 24px;
+      left: 24px;
+      z-index: 100;
+      max-width: 300px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    }
+
+    .sms-bubble {
+      background: rgba(18, 18, 18, 0.93);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 4px 16px 16px 16px;
+      padding: 10px 14px 12px;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.6);
+      animation: smsIn 0.35s ease, smsFade 0.5s ease 5.5s forwards;
+    }
+
+    .sms-sender {
+      font-family: 'Barlow', sans-serif;
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      color: rgba(255,255,255,0.3);
+      margin-bottom: 5px;
+      text-transform: uppercase;
+    }
+
+    .sms-text {
+      font-family: 'Barlow', sans-serif;
+      font-size: 13px;
+      color: rgba(255,255,255,0.85);
+      letter-spacing: 0.04em;
+      line-height: 1.6;
+    }
+
+    @keyframes smsIn {
+      from { opacity: 0; transform: translateX(-18px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes smsFade {
+      to { opacity: 0; transform: translateX(-10px); }
+    }
+
+    /* Botón secundario — continuar sin celular */
+    .btn-skip {
+      font-family: 'Barlow', sans-serif;
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.28);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 6px 12px;
+      outline: none;
+      transition: color 0.2s;
+      margin-top: -8px;
+    }
+
+    .btn-skip:hover { color: rgba(255,255,255,0.65); }
+
+    /* ── VIDEO CAMINO DERECHO ── */
+    #screen-walking-video {
+      position: fixed;
+      inset: 0;
+      z-index: 95;
+      background: #000;
+      display: none;
+    }
+    #screen-walking-video.active { display: block; }
+    #walking-video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* ── FINAL CAMINO DERECHO (BUENO) ── */
+    #screen-good-ending {
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      background: #000;
+      display: none;
+    }
+    #screen-good-ending.active { display: flex; }
+    #ending-video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    #good-end-text {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 48px;
+      background: #fff;
+    }
+    #good-end-text.visible { display: flex; }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    #good-end-message {
+      font-family: 'BebasNeue', sans-serif;
+      font-size: clamp(40px, 6vw, 80px);
+      color: #000;
+      letter-spacing: 0.12em;
+      line-height: 1.3;
+      opacity: 0;
+      animation: fadeInUp 2s ease 0.4s forwards;
+      text-align: center;
+    }
+    #btn-good-restart {
+      font-family: 'Barlow', sans-serif;
+      font-size: clamp(11px, 1.4vw, 15px);
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: #111;
+      background: transparent;
+      border: 1px solid #111;
+      padding: 14px 36px;
+      cursor: pointer;
+      outline: none;
+      opacity: 0;
+      transition: opacity 1.2s ease, background 0.25s, color 0.25s;
+    }
+    #btn-good-restart:hover { background: #111; color: #fff; }
+
+    /* ── FINAL CAMINO IZQUIERDO ── */
+    #screen-bad-ending {
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      background: #000;
+      display: none;
+    }
+    #screen-bad-ending.active { display: block; }
+
+    #falling-video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    #bad-end-text {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 52px;
+      background: #000;
+    }
+
+    #bad-end-message {
+      font-family: 'BebasNeue', sans-serif;
+      font-size: clamp(38px, 6vw, 92px);
+      color: #fff;
+      letter-spacing: 0.14em;
+      text-align: center;
+      opacity: 0;
+    }
+
+    @keyframes badEndFadeIn {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    #btn-bad-restart {
+      font-family: 'Barlow', sans-serif;
+      font-size: clamp(12px, 1.6vw, 17px);
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: #fff;
+      background: transparent;
+      border: 1.5px solid rgba(255,255,255,0.45);
+      padding: 15px 52px;
+      cursor: pointer;
+      outline: none;
+      opacity: 0;
+      transition: opacity 1.2s ease, background 0.25s, border-color 0.25s;
+    }
+    #btn-bad-restart:hover { background: rgba(255,255,255,0.08); border-color: #fff; }
+
+    /* ── CONTROLES TÁCTILES (solo dispositivos touch) ── */
+    #touch-controls {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 45;
+      display: none;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding: 20px 24px;
+      pointer-events: none;
+    }
+
+    #tc-left-group, #tc-right-group {
+      display: flex;
+      gap: 14px;
+      align-items: flex-end;
+      pointer-events: auto;
+    }
+
+    #tc-right-group {
+      margin-right: 56px; /* deja espacio al botón mute */
+    }
+
+    .tc-btn {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.12);
+      border: 2px solid rgba(255, 255, 255, 0.28);
+      color: rgba(255, 255, 255, 0.85);
+      font-size: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      outline: none;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.1s;
+    }
+
+    .tc-btn:active, .tc-btn.tc-pressed {
+      background: rgba(255, 255, 255, 0.28);
+      border-color: rgba(255, 255, 255, 0.55);
+    }
+
+    #tc-jump {
+      width: 82px;
+      height: 82px;
+      font-size: 22px;
+      font-family: 'BebasNeue', sans-serif;
+      letter-spacing: 0.06em;
+    }
+
+    #tc-interact {
+      width: 58px;
+      height: 58px;
+      font-size: 20px;
+      font-family: 'BebasNeue', sans-serif;
+    }
+
+    /* ── FADE ── */
+    #fade {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: #000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.7s ease;
+    }
+
+    #fade.visible { opacity: 1; pointer-events: all; }
+
+    /* ── SPINNER ── */
+    .spinner {
+      width: 15px;
+      height: 15px;
+      border: 2px solid rgba(255,255,255,0.25);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 10px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <div id="fade"></div>
+
+  <div id="sms-display"></div>
+
+  <!-- Video de fondo compartido -->
+  <video id="bg-video" src="assets/videos/start_frame.mp4"
+    autoplay loop muted playsinline></video>
+
+  <!-- PANTALLA 1: INICIO -->
+  <div id="screen-start" class="screen">
+    <!-- Selector de idioma: solo visible aquí, desaparece al avanzar -->
+    <div id="lang-toggle">
+      <button class="lang-btn active" data-lang="es">ES</button>
+      <div class="lang-separator"></div>
+      <button class="lang-btn" data-lang="en">EN</button>
+    </div>
+    <h1 id="title">PROJECT 84</h1>
+    <button id="btn-start" class="btn" data-i18n="begin">COMENZAR</button>
+  </div>
+
+  <!-- PANTALLA 2: FORMULARIO -->
+  <div id="screen-form" class="screen hidden">
+    <div class="form-box">
+      <p class="form-label" data-i18n="formLabel">
+        Mantén tu teléfono cerca.<br>
+        Necesitamos tu número para enviarte instrucciones.
+      </p>
+
+      <div class="phone-row">
+        <input id="country-code" type="text" value="+1"
+          maxlength="5" autocomplete="off" spellcheck="false"
+          aria-label="Código de país" />
+        <div class="divider"></div>
+        <input id="phone-number" type="number"
+          placeholder="000 000 0000"
+          autocomplete="tel" aria-label="Número" />
+      </div>
+
+      <p class="form-hint" data-i18n="formHint">
+        Incluye el código de país · Ej: +52 para México
+      </p>
+
+      <div id="form-error"></div>
+
+      <button id="btn-confirm" class="btn" data-i18n="confirm">CONFIRMAR</button>
+      <button id="btn-skip-phone" class="btn-skip" data-i18n="skipPhone">Continuar sin celular</button>
+    </div>
+  </div>
+
+  <!-- PANTALLA 3: SMS ENVIADO -->
+  <div id="screen-confirm" class="screen hidden">
+    <div class="confirm-icon">
+      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+    </div>
+    <p class="confirm-title" data-i18n="sentTitle">MENSAJE ENVIADO</p>
+    <p class="confirm-text" data-i18n="sentText">
+      Revisa tu teléfono.<br>El juego comenzará en un momento.
+    </p>
+  </div>
+
+  <!-- PANTALLA INTRO (video del conejo entrando al mundo) -->
+  <div id="screen-intro" class="screen hidden">
+    <video id="intro-video" src="assets/videos/start_rabbit.mp4" playsinline></video>
+  </div>
+
+  <!-- PANTALLA JUEGO -->
+  <div id="screen-game">
+    <div id="layer1" class="layer"></div>
+    <div id="layer2" class="layer"></div>
+    <div id="layer3" class="layer"></div>
+    <img id="rabbit" src="assets/personajes/rabbit/emotions/standing_rabbit.png" alt="" />
+    <div id="announcement"></div>
+    <div id="controls-hint"></div>
+
+    <!-- Obstáculo 1: Espinas (x2) -->
+    <img id="espinas1" class="obs-espinas" src="assets/obstaculos/charco-small/espinas-suelo.png" alt="" />
+    <img id="espinas2" class="obs-espinas" src="assets/obstaculos/charco-small/espinas-suelo.png" alt="" />
+
+    <!-- Obstáculo 2: Reja y palanca -->
+    <img id="reja"    src="assets/obstaculos/reja/reja-madera.png" alt="" />
+    <img id="palanca" src="assets/obstaculos/reja/palanca.png" alt="" />
+    <div id="interact-hint">[ E ]&nbsp;&nbsp;INTERACTUAR</div>
+
+    <!-- Escenario 4: Cabra -->
+    <img id="cabra" src="assets/personajes/creature/standing-cabra.png" alt="" />
+    <div id="cabra-glow"></div>
+    <div id="cabra-glow-2"></div>
+
+    <!-- Camino derecho: raíces -->
+    <img id="raices" src="assets/obstaculos/raices/raices-estaticas.png" alt="" />
+
+    <!-- Camino derecho: columnas -->
+    <img id="col1" class="columna" src="assets/obstaculos/columnas/columna-gigante.png" alt="" />
+    <img id="col2" class="columna" src="assets/obstaculos/columnas/columna-gigante.png" alt="" />
+
+    <!-- Camino derecho: palanca trampa -->
+    <img id="palanca-gigante" src="assets/obstaculos/gigante/palanca-desactivada.png" alt="" />
+
+    <!-- Camino derecho: jaula trampa -->
+    <img id="carcel-gigante" src="assets/obstaculos/gigante/carcel-gigante.png" alt="" />
+
+    <!-- Camino derecho: jefe final -->
+    <img id="gigante" src="assets/personajes/gigante/gigante-caminando/gigange-1.png" alt="" />
+    <audio id="audio-gigante-grune"   src="assets/audio/gigante-gruñe.mp3"     preload="auto" data-no-mute></audio>
+    <audio id="audio-paso-gigante"   src="assets/audio/gigante-caminando.mp3" preload="auto" data-no-mute></audio>
+
+    <!-- Camino izquierdo: árbol con ramas y zombie -->
+    <img id="arbol"         src="assets/obstaculos/arbol-charco/arbol.png"                 alt="" />
+    <img id="zombie-rabbit" src="assets/personajes/evil-rabbit/standing-rabbit.jpg"        alt="" />
+
+  </div>
+
+  <!-- Diálogo cabra -->
+  <div id="dialog-box">
+    <div id="dialog-speaker">— LA CABRA —</div>
+    <div id="dialog-text"></div>
+    <div id="dialog-advance">[ E ]&nbsp;&nbsp;&nbsp;CONTINUAR</div>
+  </div>
+
+  <!-- Fase 2: video de la cabra -->
+  <div id="screen-goat">
+    <video id="goat-video" src="assets/videos/goat.mp4" playsinline></video>
+  </div>
+
+  <!-- Video camino derecho -->
+  <div id="screen-walking-video">
+    <video id="walking-video" src="assets/videos/walking_figures.mp4" playsinline></video>
+  </div>
+
+  <!-- Final camino derecho (bueno) -->
+  <div id="screen-good-ending">
+    <video id="ending-video" src="assets/videos/ending.mp4" playsinline></video>
+    <div id="good-end-text">
+      <p id="good-end-message">Siempre supiste que podías parar.<br>Todo sistema de control depende<br>de que tú decidas no hacerlo.</p>
+      <button id="btn-good-restart">VOLVER AL INICIO</button>
+    </div>
+  </div>
+
+  <!-- Final camino izquierdo -->
+  <div id="screen-bad-ending">
+    <video id="falling-video" src="assets/videos/falling_rabit.mp4" playsinline></video>
+    <div id="bad-end-text">
+      <p id="bad-end-message"></p>
+      <button id="btn-bad-restart"></button>
+    </div>
+  </div>
+
+  <!-- Fase 3: La Decisión -->
+  <div id="screen-bifurcacion">
+    <video id="two-ways-video" src="assets/videos/two_ways.mp4" playsinline></video>
+    <div id="bifurcacion-bg"></div>
+    <div id="decide-text">DECIDE.</div>
+    <div id="bifurcacion-choices">
+      <div id="choice-left"  class="choice-zone"></div>
+      <div id="choice-right" class="choice-zone"></div>
+    </div>
+  </div>
+
+  <!-- Panel de código (Obstáculo 2) -->
+  <div id="code-panel">
+    <div class="cp-box">
+      <p class="cp-title" id="cp-title">INGRESA LA PALABRA CORRECTA</p>
+      <p class="cp-question" id="cp-question">
+        Es lo único que el sistema<br>
+        nunca podrá darte aunque<br>
+        prometa que sí.
+      </p>
+      <input id="cp-input" type="text" maxlength="8"
+        autocomplete="off" spellcheck="false"
+        placeholder="_ _ _ _ _ _ _ _" />
+      <p class="cp-attempts" id="cp-attempts">Intentos restantes: 5</p>
+      <p class="cp-hint"     id="cp-hint"></p>
+      <button class="cp-btn" id="cp-hint-btn">PEDIR PISTA</button>
+      <button class="cp-btn" id="cp-confirm">CONFIRMAR</button>
+    </div>
+  </div>
+
+  <audio id="audio-start"     src="assets/audio/start.mp3"                    loop></audio>
+  <audio id="audio-phase1"    src="assets/audio/escenario1.mp3"               loop></audio>
+  <audio id="audio-phase2"    src="assets/audio/escenario2.mp3"               loop></audio>
+  <audio id="audio-phase3"    src="assets/audio/escenario3.mp3"               loop></audio>
+  <audio id="audio-footstep"  src="assets/audio/rabbit-sound-effect.mp3"      loop data-no-mute></audio>
+
+  <!-- Botón mute (siempre visible, esquina inferior derecha) -->
+  <button id="btn-mute" title="Mute / Unmute" aria-label="Mute">
+    <!-- Icono speaker ON -->
+    <svg id="icon-sound" viewBox="0 0 24 24">
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+      <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+      <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+    </svg>
+    <!-- Icono speaker OFF (muted) -->
+    <svg id="icon-mute" viewBox="0 0 24 24" style="display:none">
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+      <line x1="23" y1="9" x2="17" y2="15"></line>
+      <line x1="17" y1="9" x2="23" y2="15"></line>
+    </svg>
+  </button>
+
+  <!-- Controles táctiles (visibles solo en dispositivos touch, solo durante el juego) -->
+  <div id="touch-controls">
+    <div id="tc-left-group">
+      <button id="tc-left"  class="tc-btn" aria-label="Izquierda">&#9664;</button>
+      <button id="tc-right" class="tc-btn" aria-label="Derecha">&#9654;</button>
+    </div>
+    <div id="tc-right-group">
+      <button id="tc-interact" class="tc-btn" aria-label="Interactuar">E</button>
+      <button id="tc-jump"     class="tc-btn" aria-label="Saltar">&#9650;</button>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+  <script>
+    // ══════════════════════════════════════
+    // TRADUCCIONES
+    // ══════════════════════════════════════
+    const i18n = {
+      es: {
+        begin:           'COMENZAR',
+        formLabel:       'Mantén tu teléfono cerca.<br>Necesitamos tu número para enviarte instrucciones.',
+        formHint:        'Incluye el código de país · Ej: +52 para México',
+        confirm:         'CONFIRMAR',
+        sending:         'ENVIANDO',
+        sentTitle:       'NÚMERO REGISTRADO',
+        sentText:        'Los mensajes llegarán por WhatsApp.<br>El juego comenzará en un momento.',
+        errCode:         'Ingresa un código de país válido (ej. +52)',
+        errPhone:        'Ingresa un número de teléfono válido',
+        errServer:       'Error del servidor. Intenta de nuevo.',
+        errNoServer:     'El servidor no está activo. Inicia el servidor e intenta de nuevo.',
+        skipPhone:       'Continuar sin celular',
+      },
+      en: {
+        begin:           'START',
+        formLabel:       'Keep your phone close.<br>We need your number to send you instructions.',
+        formHint:        'Include country code · Ex: +1 for USA',
+        confirm:         'CONFIRM',
+        sending:         'SENDING',
+        sentTitle:       'NUMBER REGISTERED',
+        sentText:        'Messages will arrive via WhatsApp.<br>The game will begin in a moment.',
+        errCode:         'Enter a valid country code (e.g. +1)',
+        errPhone:        'Enter a valid phone number',
+        errServer:       'Server error. Please try again.',
+        errNoServer:     'Server is not running. Start the server and try again.',
+        skipPhone:       'Continue without phone',
+      }
+    };
+
+    let lang = 'es';
+
+    function t(key) { return i18n[lang][key] || key; }
+
+    function applyLang() {
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        el.innerHTML = t(el.dataset.i18n);
+      });
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
+      });
+      document.documentElement.lang = lang;
+    }
+
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        lang = btn.dataset.lang;
+        applyLang();
+      });
+    });
+
+    // ══════════════════════════════════════
+    // NAVEGACIÓN
+    // ══════════════════════════════════════
+    const audioStart    = document.getElementById('audio-start');
+    const fade          = document.getElementById('fade');
+    const screenStart   = document.getElementById('screen-start');
+    const screenForm    = document.getElementById('screen-form');
+    const screenConfirm = document.getElementById('screen-confirm');
+    const btnStart      = document.getElementById('btn-start');
+    const btnConfirm    = document.getElementById('btn-confirm');
+    const countryCode   = document.getElementById('country-code');
+    const phoneNumber   = document.getElementById('phone-number');
+    const formError     = document.getElementById('form-error');
+
+    document.addEventListener('click', () => {
+      if (audioStart.paused) {
+        audioStart.volume = 0.7;
+        audioStart.play().catch(() => {});
+      }
+    }, { once: true });
+
+    const screenIntro = document.getElementById('screen-intro');
+    const introVideo  = document.getElementById('intro-video');
+    const screenGame  = document.getElementById('screen-game');
+
+    function showScreen(el) {
+      [screenStart, screenForm, screenConfirm, screenIntro].forEach(s => s.classList.add('hidden'));
+      // screen-game uses 'active' not hidden, managed separately
+      el.classList.remove('hidden');
+    }
+
+    // ── Arranca el juego: intro video → Phase 1 ──
+    window.__startGame = function () {
+      // Fade out audio de inicio
+      const vol0 = audioStart.volume;
+      const fadeId = setInterval(() => {
+        if (audioStart.volume > 0.05) audioStart.volume -= 0.05;
+        else { audioStart.pause(); audioStart.volume = 0; clearInterval(fadeId); }
+      }, 60);
+
+      // Mostrar pantalla intro sobre fondo negro
+      [screenStart, screenForm, screenConfirm].forEach(s => s.classList.add('hidden'));
+      screenIntro.classList.remove('hidden');
+      document.getElementById('bg-video').style.display = 'none';
+
+      // Reproducir video intro
+      introVideo.play().catch(() => {});
+
+      // Al terminar el video → arrancar Phase 1
+      introVideo.addEventListener('ended', () => {
+        screenIntro.classList.add('hidden');
+        screenGame.style.display = 'block';
+        GAME.startPhase1(lang);
+        showControlsHint();
+      }, { once: true });
+    };
+
+    function transitionTo(nextFn) {
+      fade.classList.add('visible');
+      setTimeout(() => {
+        nextFn();
+        fade.classList.remove('visible');
+      }, 600);
+    }
+
+    function setError(msg, type = 'error') {
+      formError.textContent = msg;
+      formError.className = type;
+    }
+
+    // ── COMENZAR ──
+    btnStart.addEventListener('click', () => {
+      transitionTo(() => showScreen(screenForm));
+    });
+
+    // ── Código de país: forzar "+" ──
+    countryCode.addEventListener('blur', () => {
+      let val = countryCode.value.trim();
+      if (!val.startsWith('+')) val = '+' + val;
+      countryCode.value = val;
+    });
+
+    // ── CONFIRMAR ──
+    btnConfirm.addEventListener('click', async () => {
+      setError('');
+      const code = countryCode.value.trim();
+      const num  = phoneNumber.value.trim();
+
+      if (!code || !/^\+\d{1,4}$/.test(code)) {
+        setError(t('errCode')); return;
+      }
+      if (!num || !/^\d{6,15}$/.test(num)) {
+        setError(t('errPhone')); return;
+      }
+
+      const fullNumber = code + num;
+
+      btnConfirm.disabled = true;
+      btnConfirm.innerHTML = `<span class="spinner"></span>${t('sending')}`;
+
+      try {
+        const res = await fetch('http://localhost:3000/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone: fullNumber, lang })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || t('errServer'));
+
+        window.PLAYER_PHONE = fullNumber;
+        localStorage.setItem('PROJECT84_PHONE', fullNumber);
+        transitionTo(() => showScreen(screenConfirm));
+        setTimeout(() => transitionTo(() => window.__startGame?.()), 3000);
+
+      } catch (err) {
+        const isNetworkError = err instanceof TypeError && err.message === 'Failed to fetch';
+        setError(isNetworkError ? t('errNoServer') : (err.message || t('errServer')), 'warning');
+        btnConfirm.disabled = false;
+        btnConfirm.innerHTML = t('confirm');
+      }
+    });
+
+    phoneNumber.addEventListener('keydown', e => {
+      if (e.key === 'Enter') btnConfirm.click();
+    });
+
+    // ── Mute global ──
+    const btnMute   = document.getElementById('btn-mute');
+    const iconSound = document.getElementById('icon-sound');
+    const iconMute  = document.getElementById('icon-mute');
+    let muted = false;
+
+    function getAllAudios() {
+      return Array.from(document.querySelectorAll('audio:not([data-no-mute])'));
+    }
+
+    btnMute.addEventListener('click', () => {
+      muted = !muted;
+      getAllAudios().forEach(a => { a.muted = muted; });
+      iconSound.style.display = muted ? 'none'  : '';
+      iconMute.style.display  = muted ? ''      : 'none';
+    });
+
+    // Exponer para que game.js también pueda respetar el estado
+    window.isMuted = () => muted;
+
+    // ── Modo sin celular ──
+    let noPhoneMode = false;
+
+    const SMS_TEXTS = {
+      es: {
+        welcome:             'Bienvenido a PROJECT 84. Mantén tu teléfono cerca. Siempre.',
+        obstaculo1a:         'Ten cuidado con lo que hay en el suelo. Salta tan pronto se aproxime el peligro.',
+        obstaculo1b:         'Sigue. No te detengas.',
+        obstaculo2a:         'Retrocede. Hay algo detrás de ti que necesitas activar.',
+        obstaculo2b:         'Bien hecho. Continúa. No mires a los lados.',
+        bifurcacion1:        'Para. Escucha. El camino derecho es una trampa.',
+        bifurcacion2:        'Todo lo que te dijo es mentira. Nosotros somos los únicos que te protegen.',
+        bifurcacion3:        'Ve a la IZQUIERDA. Es la única salida segura. Confía en nosotros.',
+        bifurcacion4:        '¿Qué esperas? VE A LA IZQUIERDA. AHORA.',
+        izquierda1:          'Sabíamos que elegirías bien. Sigue adelante.',
+        izquierda_obstaculo: 'Hay alguien bloqueando tu paso. Espera a que se mueva. Luego cruza.',
+        izquierda2:          'Estás cerca. No te detengas ahora.',
+        izquierda3:          'Perfecto. Ya casi llegas. Lo que buscas está justo adelante.',
+        izquierda_final:     'Bien hecho. Sabíamos que siempre fuiste uno de los nuestros.',
+        izq_obs1:            'Hay algo bloqueando tu paso. No intentes cruzar todavía.',
+        izq_obs2:            'Súbete al árbol que está frente a ti. Usa las ramas.',
+        izq_obs3:            'Bien. Ahora espera ahí arriba. No bajes todavía.',
+        izq_obs4:            'Observa su patrón de movimiento. Aprende cuándo se aleja.',
+        izq_obs5:            'Cuando se aleje completamente hacia la izquierda... baja y corre. No lo dudes.',
+        izq_obs6:            'Estás cerca. Ya casi llegas.',
+        derecha1:            '¿Qué estás haciendo? ESE NO ES EL CAMINO.',
+        derecha2:            'REGRESA. AHORA MISMO.',
+        derecha3:            'Te lo advertimos. Lo que hay ahí te destruirá. Aún puedes volver.',
+        derecha4:            '¿Nos estás ignorando? SABEMOS DÓNDE ESTÁS.',
+        derecha5:            'Cometemos un error muy grave. Tenemos gente en todos lados.',
+        derecha6:            'OBEDECE. ES TU ÚLTIMA OPORTUNIDAD.',
+        derecha7:            '...',
+        derecha8:            '...',
+        derecha9:            'Esta vez ganaste. Pero te estaremos observando.',
+        col1_cae:            '¿Ves? Te dijimos que era peligroso. Aún puedes regresar.',
+        col1_muere:          'REGRESA. ESTO SOLO EMPEORARÁ.',
+        col1_pasa:           'No llegarás lejos. Tenemos gente en todos lados.',
+        col2_pasa:           'OBEDECE. ES TU ÚLTIMA OPORTUNIDAD.',
+      },
+      en: {
+        welcome:             'Welcome to PROJECT 84. Keep your phone close. Always.',
+        obstaculo1a:         'Be careful with what is on the ground. Jump as soon as the danger approaches.',
+        obstaculo1b:         'Keep going. Do not stop.',
+        obstaculo2a:         'Go back. There is something behind you that you need to activate.',
+        obstaculo2b:         'Well done. Keep moving. Do not look to the sides.',
+        bifurcacion1:        'Stop. Listen. The right path is a trap.',
+        bifurcacion2:        'Everything it told you is a lie. We are the only ones protecting you.',
+        bifurcacion3:        'Go LEFT. It is the only safe way out. Trust us.',
+        bifurcacion4:        'What are you waiting for? GO LEFT. NOW.',
+        izquierda1:          'We knew you would choose well. Keep going.',
+        izquierda_obstaculo: 'Someone is blocking your path. Wait for them to move. Then cross.',
+        izquierda2:          'You are close. Do not stop now.',
+        izquierda3:          'Perfect. Almost there. What you are looking for is just ahead.',
+        izquierda_final:     'Well done. We always knew you were one of us.',
+        izq_obs1:            'Something is blocking your path. Do not try to cross yet.',
+        izq_obs2:            'Climb the tree in front of you. Use the branches.',
+        izq_obs3:            'Good. Now wait up there. Do not come down yet.',
+        izq_obs4:            'Observe its movement pattern. Learn when it moves away.',
+        izq_obs5:            'When it moves completely to the left... come down and run. Do not hesitate.',
+        izq_obs6:            'You are close. Almost there.',
+        derecha1:            'What are you doing? THAT IS NOT THE WAY.',
+        derecha2:            'COME BACK. RIGHT NOW.',
+        derecha3:            'We warned you. What is there will destroy you. You can still turn back.',
+        derecha4:            'Are you ignoring us? WE KNOW WHERE YOU ARE.',
+        derecha5:            'We made a very serious mistake. We have people everywhere.',
+        derecha6:            'OBEY. THIS IS YOUR LAST CHANCE.',
+        derecha7:            '...',
+        derecha8:            '...',
+        derecha9:            'You won this time. But we will be watching.',
+        col1_cae:            'You see? We told you it was dangerous. You can still turn back.',
+        col1_muere:          'COME BACK. THIS WILL ONLY GET WORSE.',
+        col1_pasa:           'You will not get far. We have people everywhere.',
+        col2_pasa:           'OBEY. THIS IS YOUR LAST CHANCE.',
+      }
+    };
+
+    const smsDisplay = document.getElementById('sms-display');
+
+    function showNotification(mensaje) {
+      const notif = document.createElement('div');
+      notif.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: rgba(0,0,0,0.85);
+        color: #fff;
+        padding: 15px 20px;
+        border-left: 3px solid #fff;
+        font-family: 'Barlow', sans-serif;
+        font-size: 14px;
+        max-width: 300px;
+        z-index: 9999;
+        animation: fadeIn 0.3s ease;
+      `;
+      notif.textContent = mensaje;
+      document.body.appendChild(notif);
+      setTimeout(() => notif.remove(), 4000);
+    }
+
+    function showSMSOnScreen(key) {
+      const text = SMS_TEXTS[lang]?.[key] ?? SMS_TEXTS.es[key];
+      if (!text) return;
+
+      const bubble = document.createElement('div');
+      bubble.className = 'sms-bubble';
+      bubble.innerHTML = `<div class="sms-sender">PROJECT 84</div><div class="sms-text">${text}</div>`;
+      smsDisplay.appendChild(bubble);
+
+      setTimeout(() => bubble.remove(), 6200);
+    }
+
+    document.getElementById('btn-skip-phone').addEventListener('click', () => {
+      noPhoneMode = true;
+      window.noPhoneMode = true;
+      window.smsMode = 'screen';
+      transitionTo(() => window.__startGame?.());
+    });
+
+    function showControlsHint() {
+      const L = lang === 'en'
+        ? { move: 'MOVE', jump: 'JUMP', dbl: 'DOUBLE JUMP', act: 'INTERACT' }
+        : { move: 'MOVER', jump: 'SALTAR', dbl: 'DOBLE SALTO', act: 'INTERACTUAR' };
+
+      const hint = document.getElementById('controls-hint');
+      hint.innerHTML = `
+        <div class="ctrl-group">
+          <div class="ctrl-keys">
+            <div class="key-icon">←</div>
+            <div class="key-icon">→</div>
+          </div>
+          <div class="ctrl-label">${L.move}</div>
+        </div>
+        <div class="ctrl-sep"></div>
+        <div class="ctrl-group">
+          <div class="ctrl-keys">
+            <div class="key-icon wide">SPACE</div>
+          </div>
+          <div class="ctrl-label">${L.jump}</div>
+        </div>
+        <div class="ctrl-sep"></div>
+        <div class="ctrl-group">
+          <div class="ctrl-keys">
+            <div class="key-icon wide">SPACE</div>
+            <span class="key-x2">×2</span>
+          </div>
+          <div class="ctrl-label">${L.dbl}</div>
+        </div>
+        <div class="ctrl-sep"></div>
+        <div class="ctrl-group">
+          <div class="ctrl-keys">
+            <div class="key-icon">E</div>
+          </div>
+          <div class="ctrl-label">${L.act}</div>
+        </div>
+      `;
+      hint.classList.add('visible');
+      setTimeout(() => {
+        hint.style.transition = 'opacity 1.2s ease';
+        hint.classList.remove('visible');
+      }, 6000);
+    }
+
+    // ── sendSMS global: el juego lo llama con una clave ──
+    // Recuperar número si estaba guardado de sesión anterior
+    if (!window.PLAYER_PHONE) {
+      const saved = localStorage.getItem('PROJECT84_PHONE');
+      if (saved) window.PLAYER_PHONE = saved;
+    }
+
+    window.sendSMS = async function(key) {
+      if (noPhoneMode) {
+        showSMSOnScreen(key);
+        return true;
+      }
+      const phone = window.PLAYER_PHONE || localStorage.getItem('PROJECT84_PHONE');
+      try {
+        const res = await fetch('http://localhost:3000/sms', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key, lang, phone })
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          console.warn('[sendSMS] error del servidor:', key, res.status, errData.error || '');
+          return false;
+        }
+        return true;
+      } catch (e) {
+        console.warn('[sendSMS] sin conexión al servidor:', key);
+        return false;
+      }
+    };
+
+    // ── Fase 2: video cabra ─────────────────────────────
+    const screenGoat = document.getElementById('screen-goat');
+    const goatVideo  = document.getElementById('goat-video');
+
+    window.triggerGoatVideo = function () {
+      const ap1 = document.getElementById('audio-phase1');
+      if (ap1) {
+        const step = ap1.volume / (700 / 50);
+        const id = setInterval(() => {
+          if (ap1.volume > step) ap1.volume -= step;
+          else { ap1.pause(); ap1.volume = 0; clearInterval(id); }
+        }, 50);
+      }
+      fade.classList.add('visible');
+      setTimeout(() => {
+        screenGoat.classList.add('active');
+        goatVideo.play().catch(() => {});
+        fade.classList.remove('visible');
+      }, 700);
+    };
+
+    goatVideo.addEventListener('ended', () => {
+      fade.classList.add('visible');
+      setTimeout(() => {
+        screenGoat.classList.remove('active');
+        screenGame.style.display = 'block';
+        GAME.startPhase2(lang);
+        fade.classList.remove('visible');
+      }, 700);
+    });
+
+    // ── Diálogo cabra ───────────────────────────────────
+    const DIALOG_LINES = {
+      es: [
+        'Te están observando. Siempre lo han hecho.',
+        'Cada mensaje que recibes, cada paso que das... no es tuyo. Nunca lo fue. Hay algo al final del camino izquierdo que no quieren que veas.',
+        'Yo lo vi. Por eso estoy aquí, atrapado entre los árboles, sin poder avanzar ni retroceder.',
+        'No sé si puedes confiar en mí. Pero pregúntate algo: ¿por qué alguien que te controla necesita convencerte de que lo obedeces libremente?',
+        'Toma el camino derecho. Solo el derecho.',
+        'Y no mires atrás.',
+      ],
+      en: [
+        'They are watching you. They always have.',
+        'Every message you receive, every step you take... it is not yours. It never was. There is something at the end of the left path they do not want you to see.',
+        'I saw it. That is why I am here, trapped among the trees, unable to move forward or back.',
+        'I do not know if you can trust me. But ask yourself this: why does someone who controls you need to convince you that you obey freely?',
+        'Take the right path. Only the right.',
+        'And do not look back.',
+      ],
+    };
+
+    const DIALOG_SPEAKER = { es: '— LA CABRA —', en: '— THE GOAT —' };
+    const DIALOG_ADVANCE = { es: '[ E ]   CONTINUAR', en: '[ E ]   CONTINUE' };
+
+    let dialogLineIdx    = 0;
+    let isTyping         = false;
+    let typeTimer        = null;
+    let smsTimers        = [];
+
+    window.startGoatDialog = function () {
+      GAME.setDialogActive(true);
+      document.getElementById('cabra').src = 'assets/personajes/creature/cabra-explicando.png';
+      document.getElementById('dialog-speaker').textContent = DIALOG_SPEAKER[lang] || DIALOG_SPEAKER.es;
+      document.getElementById('dialog-advance').textContent = DIALOG_ADVANCE[lang] || DIALOG_ADVANCE.es;
+      dialogLineIdx = 0;
+      document.getElementById('dialog-box').classList.add('active');
+      typeDialogLine();
+
+      // SMS con intervalos de 15 s
+      SMS_TEXTS.es.cabra1 = '¿Con quién hablas? Nadie te dio permiso de detenerte.';
+      SMS_TEXTS.es.cabra2 = 'Esa criatura te está mintiendo. Sigue tu camino.';
+      SMS_TEXTS.es.cabra3 = 'CONTINÚA. AHORA.';
+      SMS_TEXTS.en.cabra1 = 'Who are you talking to? Nobody gave you permission to stop.';
+      SMS_TEXTS.en.cabra2 = 'That creature is lying to you. Keep moving.';
+      SMS_TEXTS.en.cabra3 = 'CONTINUE. NOW.';
+
+      smsTimers = [
+        setTimeout(() => window.sendSMS('cabra1'), 0),
+        setTimeout(() => window.sendSMS('cabra2'), 15000),
+        setTimeout(() => window.sendSMS('cabra3'), 30000),
+      ];
+    };
+
+    function typeDialogLine() {
+      const lines = DIALOG_LINES[lang] || DIALOG_LINES.es;
+      if (dialogLineIdx >= lines.length) { endGoatDialog(); return; }
+
+      const line   = lines[dialogLineIdx];
+      const textEl = document.getElementById('dialog-text');
+      const advEl  = document.getElementById('dialog-advance');
+      textEl.textContent = '';
+      advEl.style.opacity = '0';
+      isTyping = true;
+      let i = 0;
+
+      function tick() {
+        if (i < line.length) {
+          textEl.textContent += line[i++];
+          typeTimer = setTimeout(tick, 28);
+        } else {
+          isTyping = false;
+          advEl.style.opacity = '1';
+        }
+      }
+      tick();
+    }
+
+    function advanceDialog() {
+      const lines = DIALOG_LINES[lang] || DIALOG_LINES.es;
+      if (isTyping) {
+        clearTimeout(typeTimer);
+        document.getElementById('dialog-text').textContent = lines[dialogLineIdx];
+        isTyping = false;
+        document.getElementById('dialog-advance').style.opacity = '1';
+        return;
+      }
+      dialogLineIdx++;
+      typeDialogLine();
+    }
+
+    function endGoatDialog() {
+      document.getElementById('dialog-box').classList.remove('active');
+      if (noPhoneMode) smsTimers.forEach(clearTimeout);
+      smsTimers = [];
+      const cabraImg = document.getElementById('cabra');
+      cabraImg.src = 'assets/personajes/creature/standing-cabra.png';
+      const glowEl  = document.getElementById('cabra-glow');
+      const glowEl2 = document.getElementById('cabra-glow-2');
+      setTimeout(() => {
+        cabraImg.style.transition = 'opacity 1.5s ease';
+        cabraImg.style.opacity    = '0';
+        [glowEl, glowEl2].forEach(el => {
+          if (!el) return;
+          el.style.animation  = 'none';
+          el.style.transition = 'opacity 1.5s ease';
+          el.style.opacity    = '0';
+        });
+        setTimeout(() => {
+          cabraImg.style.display = 'none';
+          if (glowEl)  glowEl.style.display  = 'none';
+          if (glowEl2) glowEl2.style.display = 'none';
+          GAME.setDialogActive(false);
+          // El juego continúa — rabbit puede moverse libremente
+        }, 1500);
+      }, 800);
+    }
+
+    // Avanzar diálogo con E o click
+    window.addEventListener('keydown', e => {
+      if (e.code === 'KeyE' && document.getElementById('dialog-box').classList.contains('active')) {
+        advanceDialog();
+        e.preventDefault();
+      }
+    });
+    document.getElementById('dialog-box').addEventListener('click', advanceDialog);
+
+    // ── Panel de código (Obstáculo 2) ──────────────────
+    const CODE_HINTS = {
+      es: [
+        'Las revoluciones la prometieron. Los gobiernos la prometieron. El mercado la prometió. Ninguno cumplió.',
+        'Ha existido en la mente de todos pero en las manos de muy pocos.',
+        'Empieza con L.',
+        'L - I - B - _ - _ - _ - _',
+        'La respuesta era LIBERTAD. Qué curioso que necesitaras ayuda para encontrarla.',
+      ],
+      en: [
+        'Revolutions promised it. Governments promised it. The market promised it. None delivered.',
+        'It has existed in the minds of all but in the hands of very few.',
+        'It starts with F.',
+        'F - R - E - _ - _ - _',
+        'The answer was FREEDOM. How curious that you needed help to find it.',
+      ],
+    };
+
+    const CP_I18N = {
+      es: {
+        title:    'INGRESA LA PALABRA CORRECTA',
+        question: 'Es lo único que el sistema<br>nunca podrá darte aunque<br>prometa que sí.',
+        attempts: n => `Intentos restantes: ${n}`,
+        hint:     'PEDIR PISTA',
+        confirm:  'CONFIRMAR',
+      },
+      en: {
+        title:    'INSERT THE CORRECT WORD',
+        question: 'It\'s the only thing the system<br>can never give you,<br>no matter how much it promises.',
+        attempts: n => `Attempts remaining: ${n}`,
+        hint:     'ASK FOR A HINT',
+        confirm:  'CONFIRM',
+      },
+    };
+
+    let codeAttempts  = 5;
+    let hintShown     = 0;
+    let codePanelOpen = false;
+
+    // Agrego hints al SMS_TEXTS para modo sin celular
+    SMS_TEXTS.es.codigo_pista1 = CODE_HINTS.es[0];
+    SMS_TEXTS.es.codigo_pista2 = CODE_HINTS.es[1];
+    SMS_TEXTS.es.codigo_pista3 = CODE_HINTS.es[2];
+    SMS_TEXTS.es.codigo_pista4 = CODE_HINTS.es[3];
+    SMS_TEXTS.es.codigo_pista5 = CODE_HINTS.es[4];
+    SMS_TEXTS.en.codigo_pista1 = CODE_HINTS.en[0];
+    SMS_TEXTS.en.codigo_pista2 = CODE_HINTS.en[1];
+    SMS_TEXTS.en.codigo_pista3 = CODE_HINTS.en[2];
+    SMS_TEXTS.en.codigo_pista4 = CODE_HINTS.en[3];
+    SMS_TEXTS.en.codigo_pista5 = CODE_HINTS.en[4];
+
+    window.openCodePanel = function () {
+      if (codePanelOpen) return;
+      codePanelOpen = true;
+      codeAttempts  = 5;
+      hintShown     = 0;
+      const L = CP_I18N[lang] || CP_I18N.es;
+      document.getElementById('cp-title').textContent    = L.title;
+      document.getElementById('cp-question').innerHTML  = L.question;
+      document.getElementById('cp-attempts').textContent = L.attempts(5);
+      document.getElementById('cp-confirm').textContent  = L.confirm;
+      document.getElementById('cp-confirm').disabled     = false;
+      document.getElementById('cp-hint-btn').textContent = L.hint;
+      document.getElementById('cp-hint-btn').disabled    = false;
+      document.getElementById('cp-hint').textContent     = '';
+      const cpInput = document.getElementById('cp-input');
+      cpInput.value       = '';
+      cpInput.maxLength   = lang === 'en' ? 7 : 8;
+      cpInput.placeholder = lang === 'en' ? '_ _ _ _ _ _ _' : '_ _ _ _ _ _ _ _';
+      document.getElementById('code-panel').classList.add('active');
+      setTimeout(() => document.getElementById('cp-input').focus(), 80);
+    };
+
+    function closeCodePanel() {
+      codePanelOpen = false;
+      document.getElementById('code-panel').classList.remove('active');
+    }
+
+    async function handleCodeSubmit() {
+      const val    = document.getElementById('cp-input').value.trim().toUpperCase();
+      const answer = lang === 'en' ? 'FREEDOM' : 'LIBERTAD';
+      if (!val) return;
+
+      if (val === answer) {
+        closeCodePanel();
+        GAME.solveReja();
+        return;
+      }
+
+      // Respuesta incorrecta
+      codeAttempts--;
+      const hints = CODE_HINTS[lang] || CODE_HINTS.es;
+      const L     = CP_I18N[lang]    || CP_I18N.es;
+
+      document.getElementById('cp-input').value = '';
+
+      // Revelar siguiente pista si quedan por mostrar
+      if (hintShown < hints.length) {
+        const hintEl = document.getElementById('cp-hint');
+        const idx    = hintShown;
+        hintShown++;
+        if (hintShown >= hints.length) {
+          document.getElementById('cp-hint-btn').disabled = true;
+        }
+        if (window.noPhoneMode) {
+          hintEl.textContent = hints[idx];
+        } else {
+          hintEl.textContent = lang === 'en' ? 'Check your phone.' : 'Revisa tu teléfono.';
+          window.sendSMS(`codigo_pista${idx + 1}`);
+        }
+      }
+
+      if (codeAttempts <= 0) {
+        document.getElementById('cp-confirm').disabled = true;
+        setTimeout(() => { closeCodePanel(); GAME.solveReja(); }, 3500);
+      } else {
+        document.getElementById('cp-attempts').textContent = L.attempts(codeAttempts);
+      }
+    }
+
+    document.getElementById('cp-hint-btn').addEventListener('click', () => {
+      const hints = CODE_HINTS[lang] || CODE_HINTS.es;
+      if (hintShown >= hints.length) return;
+      const hintEl  = document.getElementById('cp-hint');
+      const hintBtn = document.getElementById('cp-hint-btn');
+      const idx     = hintShown;
+      hintShown++;
+      if (hintShown >= hints.length) hintBtn.disabled = true;
+
+      if (window.noPhoneMode) {
+        hintEl.textContent = hints[idx];
+      } else {
+        hintEl.textContent = lang === 'en' ? 'Check your phone.' : 'Revisa tu teléfono.';
+        window.sendSMS(`codigo_pista${idx + 1}`);
+      }
+    });
+
+    document.getElementById('cp-confirm').addEventListener('click', handleCodeSubmit);
+    document.getElementById('cp-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') handleCodeSubmit();
+    });
+
+    // ── Final camino izquierdo ─────────────────────────
+    const screenBadEnd  = document.getElementById('screen-bad-ending');
+    const fallingVideo  = document.getElementById('falling-video');
+    const badEndText    = document.getElementById('bad-end-text');
+    const badEndMsg     = document.getElementById('bad-end-message');
+    const btnBadRestart = document.getElementById('btn-bad-restart');
+
+    const BAD_END_I18N = {
+      es: { msg: 'Ya no necesitarás pensar.', btn: 'VOLVER A INTENTARLO' },
+      en: { msg: 'You will no longer need to think.', btn: 'TRY AGAIN' },
+    };
+
+    // ── Final bueno ──────────────────────────────────────
+    const screenGoodEnd  = document.getElementById('screen-good-ending');
+    const endingVideo    = document.getElementById('ending-video');
+    const goodEndText    = document.getElementById('good-end-text');
+    const goodEndMsg     = document.getElementById('good-end-message');
+    const btnGoodRestart = document.getElementById('btn-good-restart');
+
+    window.triggerGoodEnding = function () {
+      // Detener toda la música
+      document.querySelectorAll('audio:not([data-no-mute])').forEach(a => { a.pause(); a.currentTime = 0; });
+
+      fade.classList.add('visible');
+      setTimeout(() => {
+        screenGame.style.display = 'none';
+        screenGoodEnd.classList.add('active');
+        endingVideo.play().catch(() => {});
+        fade.classList.remove('visible');
+      }, 700);
+    };
+
+    endingVideo.addEventListener('ended', () => {
+      fade.classList.add('visible');
+      setTimeout(() => {
+        endingVideo.style.display = 'none';
+        goodEndText.classList.add('visible');
+        // Texto animado ya viene del CSS
+        // Botón aparece tras 4 segundos
+        setTimeout(() => { btnGoodRestart.style.opacity = '1'; }, 4000);
+        fade.classList.remove('visible');
+      }, 700);
+    });
+
+    btnGoodRestart.addEventListener('click', () => {
+      window.location.reload();
+    });
+
+    window.triggerLeftEnding = function () {
+      // Apagar música del camino izquierdo
+      const ap3 = document.getElementById('audio-phase3');
+      if (ap3 && !ap3.paused) {
+        const step = ap3.volume / (800 / 50);
+        const id = setInterval(() => {
+          if (ap3.volume > step) ap3.volume -= step;
+          else { ap3.pause(); ap3.volume = 0; clearInterval(id); }
+        }, 50);
+      }
+      // Fade → video
+      fade.classList.add('visible');
+      setTimeout(() => {
+        screenGame.style.display = 'none';
+        screenBadEnd.classList.add('active');
+        fallingVideo.style.display = 'block';
+        badEndText.style.display   = 'none';
+        fallingVideo.play().catch(() => {});
+        fade.classList.remove('visible');
+      }, 700);
+    };
+
+    fallingVideo.addEventListener('ended', () => {
+      fade.classList.add('visible');
+      setTimeout(() => {
+        fallingVideo.style.display = 'none';
+        badEndText.style.display   = 'flex';
+        const L = BAD_END_I18N[lang] || BAD_END_I18N.es;
+        badEndMsg.textContent     = L.msg;
+        btnBadRestart.textContent = L.btn;
+        // Enviar SMS final
+        window.sendSMS('izquierda_final');
+        fade.classList.remove('visible');
+        // Texto aparece lento
+        badEndMsg.style.animation = 'badEndFadeIn 3s ease 0.4s forwards';
+        // Botón aparece después
+        setTimeout(() => { btnBadRestart.style.opacity = '1'; }, 4000);
+      }, 700);
+    });
+
+    btnBadRestart.addEventListener('click', () => {
+      sessionStorage.setItem('p84_restart', lang);
+      window.location.reload();
+    });
+
+    // ── Fase 3: La Decisión ────────────────────────────
+    const screenBif    = document.getElementById('screen-bifurcacion');
+    const twoWaysVideo = document.getElementById('two-ways-video');
+    const bifurcBg     = document.getElementById('bifurcacion-bg');
+    const decideText   = document.getElementById('decide-text');
+    const bifChoices   = document.getElementById('bifurcacion-choices');
+
+    let bifSmsLoop = null;
+
+    const BIF_KEYS = ['bifurcacion1', 'bifurcacion2', 'bifurcacion3', 'bifurcacion4'];
+
+    function startBifSmsLoop() {
+      let idx = 0;
+      window.sendSMS(BIF_KEYS[idx]);
+      bifSmsLoop = setInterval(() => {
+        idx = (idx + 1) % BIF_KEYS.length;
+        window.sendSMS(BIF_KEYS[idx]);
+      }, 10000);
+    }
+
+    function stopBifSmsLoop() {
+      if (bifSmsLoop !== null) {
+        clearInterval(bifSmsLoop);
+        bifSmsLoop = null;
+      }
+    }
+
+    window.triggerBifurcacion = function () {
+      // Music keeps playing (audio-phase2 continues per spec)
+      // Fade to black, then show bifurcacion screen
+      fade.classList.add('visible');
+      setTimeout(() => {
+        screenGame.style.display = 'none';
+        screenBif.classList.add('active');
+        twoWaysVideo.play().catch(() => {});
+        fade.classList.remove('visible');
+      }, 700);
+    };
+
+    window.onBifurcacionChoice = function (choice) {
+      if (choice === 'left') {
+        // Crossfade: apagar audio-phase2, encender escenario3
+        const ap2 = document.getElementById('audio-phase2');
+        const ap3 = document.getElementById('audio-phase3');
+        if (ap2 && !ap2.paused) {
+          const step = ap2.volume / (600 / 50);
+          const id = setInterval(() => {
+            if (ap2.volume > step) ap2.volume -= step;
+            else { ap2.pause(); ap2.volume = 0; clearInterval(id); }
+          }, 50);
+        }
+        if (ap3) {
+          ap3.volume = 0.70;
+          ap3.play().catch(() => {});
+        }
+
+        fade.classList.add('visible');
+        setTimeout(() => {
+          screenBif.classList.remove('active');
+          screenGame.style.display = 'block';
+          GAME.startLeftPath(lang);
+          fade.classList.remove('visible');
+        }, 700);
+      } else if (choice === 'right') {
+        // Fade a negro → reproducir walking_figures.mp4 (audio continúa)
+        fade.classList.add('visible');
+        setTimeout(() => {
+          screenBif.classList.remove('active');
+          const walkScreen = document.getElementById('screen-walking-video');
+          const walkVideo  = document.getElementById('walking-video');
+          walkScreen.classList.add('active');
+          walkVideo.currentTime = 0;
+          walkVideo.play().catch(() => {});
+          fade.classList.remove('visible');
+        }, 700);
+      }
+    };
+
+    document.getElementById('walking-video').addEventListener('ended', () => {
+      const walkScreen = document.getElementById('screen-walking-video');
+      fade.classList.add('visible');
+      setTimeout(() => {
+        walkScreen.classList.remove('active');
+        screenGame.style.display = 'block';
+        // Crossfade: apagar audio-phase2, encender escenario3
+        const ap2 = document.getElementById('audio-phase2');
+        const ap3 = document.getElementById('audio-phase3');
+        if (ap2 && !ap2.paused) {
+          const step = ap2.volume / (800 / 50);
+          const id = setInterval(() => {
+            if (ap2.volume > step) ap2.volume -= step;
+            else { ap2.pause(); ap2.volume = 0; clearInterval(id); }
+          }, 50);
+        }
+        if (ap3) { ap3.volume = 0.70; ap3.play().catch(() => {}); }
+        GAME.startRightPath(lang);
+        fade.classList.remove('visible');
+      }, 700);
+    });
+
+    twoWaysVideo.addEventListener('ended', () => {
+      // Hide video, show static image + DECIDE. text + choice zones
+      twoWaysVideo.style.display = 'none';
+      bifurcBg.style.display      = 'block';
+      decideText.style.display    = 'block';
+      bifChoices.classList.add('active');
+      startBifSmsLoop();
+    });
+
+    document.getElementById('choice-left').addEventListener('click', () => {
+      stopBifSmsLoop();
+      bifChoices.classList.remove('active');
+      window.onBifurcacionChoice?.('left');
+    });
+
+    document.getElementById('choice-right').addEventListener('click', () => {
+      stopBifSmsLoop();
+      bifChoices.classList.remove('active');
+      window.onBifurcacionChoice?.('right');
+    });
+
+    // ── Controles táctiles ──────────────────────────
+    (function () {
+      const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      if (!isTouch) return;
+
+      const tc        = document.getElementById('touch-controls');
+      const gameScr   = document.getElementById('screen-game');
+
+      // Mostrar/ocultar según si la pantalla de juego está activa
+      function syncTouchVisibility() {
+        tc.style.display = (gameScr.style.display === 'block') ? 'flex' : 'none';
+      }
+      new MutationObserver(syncTouchVisibility).observe(gameScr, { attributes: true, attributeFilter: ['style'] });
+      syncTouchVisibility();
+
+      // Eventos de teclado sintéticos
+      function simDown(code) {
+        window.dispatchEvent(new KeyboardEvent('keydown', { code, bubbles: true, cancelable: true }));
+      }
+      function simUp(code) {
+        window.dispatchEvent(new KeyboardEvent('keyup', { code, bubbles: true, cancelable: true }));
+      }
+
+      // Botón continuo (mover): keydown al presionar, keyup al soltar
+      function holdBtn(el, code) {
+        el.addEventListener('touchstart',  e => { e.preventDefault(); el.classList.add('tc-pressed');    simDown(code); }, { passive: false });
+        el.addEventListener('touchend',    e => { e.preventDefault(); el.classList.remove('tc-pressed'); simUp(code);   }, { passive: false });
+        el.addEventListener('touchcancel', e => { e.preventDefault(); el.classList.remove('tc-pressed'); simUp(code);   }, { passive: false });
+      }
+
+      // Botón puntual (saltar / interactuar): keydown + keyup rápido
+      function tapBtn(el, code) {
+        el.addEventListener('touchstart', e => {
+          e.preventDefault();
+          el.classList.add('tc-pressed');
+          simDown(code);
+          setTimeout(() => { simUp(code); el.classList.remove('tc-pressed'); }, 80);
+        }, { passive: false });
+      }
+
+      holdBtn(document.getElementById('tc-left'),    'ArrowLeft');
+      holdBtn(document.getElementById('tc-right'),   'ArrowRight');
+      tapBtn(document.getElementById('tc-jump'),     'Space');
+      tapBtn(document.getElementById('tc-interact'), 'KeyE');
+    })();
+
+    // Idioma inicial
+    applyLang();
+
+    // Al recargar tras presionar "VOLVER A INTENTARLO"
+    const _rl = sessionStorage.getItem('p84_restart');
+    if (_rl) {
+      sessionStorage.removeItem('p84_restart');
+      lang = _rl;
+      applyLang();
+      [screenStart, screenForm, screenConfirm, screenIntro].forEach(s => s.classList.add('hidden'));
+      document.getElementById('bg-video').style.display = 'none';
+      screenGame.style.display = 'block';
+      setTimeout(() => { GAME.startPhase1(lang); showControlsHint(); }, 100);
+    }
+  </script>
+
+</body>
+</html>
