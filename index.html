@@ -1509,7 +1509,7 @@
       btnConfirm.innerHTML = `<span class="spinner"></span>${t('sending')}`;
 
       try {
-        const res = await fetch('http://localhost:3000/register', {
+        const res = await fetch('/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ phone: fullNumber, lang })
@@ -1731,7 +1731,7 @@
       }
       const phone = window.PLAYER_PHONE || localStorage.getItem('PROJECT84_PHONE');
       try {
-        const res = await fetch('http://localhost:3000/sms', {
+        const res = await fetch('/sms', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ key, lang, phone })
