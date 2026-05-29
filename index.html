@@ -2,7 +2,9 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <title>PROJECT 84</title>
   <style>
     @font-face {
@@ -25,6 +27,8 @@
       height: 100%;
       background: #000;
       overflow: hidden;
+      overscroll-behavior: none;
+      touch-action: none;
     }
 
     /* ── VIDEO DE FONDO ── */
@@ -1045,9 +1049,15 @@
     #btn-bad-restart:hover { background: rgba(255,255,255,0.08); border-color: #fff; }
 
     /* ── CONTROLES TÁCTILES (solo dispositivos touch) ── */
+    /* Ocultar ojos de cabra en táctiles (calibrados para pantalla fija) */
+    @media (hover: none) and (pointer: coarse) {
+      #cabra-glow, #cabra-glow-2 { display: none !important; }
+    }
+
     #touch-controls {
       position: fixed;
       bottom: 0;
+      bottom: env(safe-area-inset-bottom, 0);
       left: 0;
       right: 0;
       z-index: 45;
@@ -1055,6 +1065,7 @@
       justify-content: space-between;
       align-items: flex-end;
       padding: 20px 24px;
+      padding-bottom: max(20px, env(safe-area-inset-bottom, 20px));
       pointer-events: none;
     }
 
@@ -1161,9 +1172,52 @@
     }
 
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── PORTRAIT OVERLAY (touch devices only) ── */
+    #portrait-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: #000;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      color: #fff;
+      font-family: 'BebasNeue', sans-serif;
+      letter-spacing: 0.12em;
+      text-align: center;
+      padding: 24px;
+    }
+    #portrait-overlay svg {
+      width: 56px; height: 56px;
+      opacity: 0.7;
+      animation: rotatePulse 2s ease-in-out infinite;
+    }
+    #portrait-overlay p {
+      font-size: clamp(18px, 5vw, 28px);
+      opacity: 0.75;
+    }
+    @keyframes rotatePulse {
+      0%, 100% { transform: rotate(0deg); opacity: 0.5; }
+      50%       { transform: rotate(90deg); opacity: 1; }
+    }
+    @media (hover: none) and (pointer: coarse) and (orientation: portrait) {
+      #portrait-overlay { display: flex; }
+    }
   </style>
 </head>
 <body>
+
+  <!-- Overlay portrait: solo visible en táctiles con orientación vertical -->
+  <div id="portrait-overlay">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <rect x="4" y="2" width="16" height="20" rx="2"/>
+      <path d="M9 12h6M12 9v6"/>
+    </svg>
+    <p id="portrait-msg" data-i18n="portrait">ROTA EL DISPOSITIVO</p>
+  </div>
 
   <button id="btn-home" data-i18n="home">← INICIO</button>
   <div id="fade"></div>
@@ -1397,6 +1451,7 @@
         errNoServer:     'El servidor no está activo. Inicia el servidor e intenta de nuevo.',
         skipPhone:       'Continuar sin celular',
         home:            '← INICIO',
+        portrait:        'ROTA EL DISPOSITIVO',
       },
       en: {
         begin:           'START',
@@ -1412,6 +1467,7 @@
         errNoServer:     'Server is not running. Start the server and try again.',
         skipPhone:       'Continue without phone',
         home:            '← START',
+        portrait:        'ROTATE DEVICE',
       }
     };
 
@@ -1552,6 +1608,10 @@
       if (!num || !/^\d{6,15}$/.test(num)) {
         setError(t('errPhone')); return;
       }
+
+      // Unlock introVideo for iOS HERE (synchronous, inside the click gesture,
+      // before any await that breaks the user-gesture chain)
+      { const _p = introVideo.play(); if (_p) _p.then(() => { introVideo.pause(); introVideo.currentTime = 0; }).catch(() => {}); }
 
       const fullNumber = code + num;
 
@@ -1720,6 +1780,8 @@
       noPhoneMode = true;
       window.noPhoneMode = true;
       window.smsMode = 'screen';
+      // Unlock introVideo for iOS (synchronous, inside click gesture)
+      { const _p = introVideo.play(); if (_p) _p.then(() => { introVideo.pause(); introVideo.currentTime = 0; }).catch(() => {}); }
       transitionTo(() => window.__startGame?.());
     });
 
