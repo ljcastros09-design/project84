@@ -735,22 +735,35 @@
       text-align: center;
     }
 
-    #cp-input {
+    .cp-input-row {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin: 20px 0 10px;
+      flex-wrap: wrap;
+    }
+
+    .cp-letter-input {
+      width: 36px;
+      height: 48px;
       background: transparent;
       border: none;
-      border-bottom: 2px solid rgba(255,255,255,0.5);
+      border-bottom: 2px solid rgba(255,255,255,0.45);
       color: #fff;
       font-family: 'BebasNeue', sans-serif;
-      font-size: 30px;
-      letter-spacing: 0.42em;
+      font-size: 26px;
       text-align: center;
-      width: 260px;
-      max-width: 100%;
-      outline: none;
       text-transform: uppercase;
-      padding: 6px 0;
-      caret-color: rgba(255,255,255,0.5);
+      outline: none;
+      caret-color: transparent;
+      padding: 0;
     }
+
+    .cp-letter-input:focus {
+      border-bottom-color: #fff;
+    }
+
+    #cp-input { display: none; }
 
     .cp-attempts {
       font-family: 'Barlow', sans-serif;
@@ -1440,9 +1453,8 @@
         nunca podrá darte aunque<br>
         prometa que sí.
       </p>
-      <input id="cp-input" type="text" maxlength="8"
-        autocomplete="off" spellcheck="false"
-        placeholder="_ _ _ _ _ _ _ _" />
+      <div id="cp-input-row" class="cp-input-row"></div>
+      <input id="cp-input" type="text" maxlength="8" autocomplete="off" spellcheck="false" style="display:none" />
       <p class="cp-attempts" id="cp-attempts">Intentos restantes: 5</p>
       <p class="cp-hint"     id="cp-hint"></p>
       <button class="cp-btn" id="cp-hint-btn">PEDIR PISTA</button>
@@ -2159,12 +2171,33 @@
       document.getElementById('cp-hint-btn').textContent = L.hint;
       document.getElementById('cp-hint-btn').disabled    = false;
       document.getElementById('cp-hint').textContent     = '';
-      const cpInput = document.getElementById('cp-input');
-      cpInput.value       = '';
-      cpInput.maxLength   = lang === 'en' ? 7 : 8;
-      cpInput.placeholder = lang === 'en' ? '_ _ _ _ _ _ _' : '_ _ _ _ _ _ _ _';
+      const wordLen = lang === 'en' ? 7 : 8;
+      const row = document.getElementById('cp-input-row');
+      row.innerHTML = '';
+      const letterInputs = [];
+      for (let i = 0; i < wordLen; i++) {
+        const inp = document.createElement('input');
+        inp.type = 'text';
+        inp.maxLength = 1;
+        inp.autocomplete = 'off';
+        inp.spellcheck = false;
+        inp.className = 'cp-letter-input';
+        inp.addEventListener('input', () => {
+          inp.value = inp.value.toUpperCase().replace(/[^A-Z]/g, '');
+          if (inp.value && i < wordLen - 1) letterInputs[i + 1].focus();
+        });
+        inp.addEventListener('keydown', e => {
+          if (e.key === 'Backspace' && !inp.value && i > 0) {
+            letterInputs[i - 1].value = '';
+            letterInputs[i - 1].focus();
+          }
+          if (e.key === 'Enter') handleCodeSubmit();
+        });
+        row.appendChild(inp);
+        letterInputs.push(inp);
+      }
       document.getElementById('code-panel').classList.add('active');
-      setTimeout(() => document.getElementById('cp-input').focus(), 80);
+      setTimeout(() => letterInputs[0]?.focus(), 80);
     };
 
     function closeCodePanel() {
@@ -2173,7 +2206,7 @@
     }
 
     async function handleCodeSubmit() {
-      const val    = document.getElementById('cp-input').value.trim().toUpperCase();
+      const val    = [...document.querySelectorAll('.cp-letter-input')].map(i => i.value).join('').trim().toUpperCase();
       const answer = lang === 'en' ? 'FREEDOM' : 'LIBERTAD';
       if (!val) return;
 
@@ -2188,7 +2221,9 @@
       const hints = CODE_HINTS[lang] || CODE_HINTS.es;
       const L     = CP_I18N[lang]    || CP_I18N.es;
 
-      document.getElementById('cp-input').value = '';
+      const _boxes = document.querySelectorAll('.cp-letter-input');
+      _boxes.forEach(b => { b.value = ''; });
+      _boxes[0]?.focus();
 
       // Revelar siguiente pista si quedan por mostrar
       if (hintShown < hints.length) {
@@ -2232,9 +2267,6 @@
     });
 
     document.getElementById('cp-confirm').addEventListener('click', handleCodeSubmit);
-    document.getElementById('cp-input').addEventListener('keydown', e => {
-      if (e.key === 'Enter') handleCodeSubmit();
-    });
 
     // ── Final camino izquierdo ─────────────────────────
     const screenBadEnd  = document.getElementById('screen-bad-ending');
