@@ -313,9 +313,52 @@
       flex: 1;
       cursor: pointer;
       transition: background 0.25s;
+      position: relative;
     }
 
     .choice-zone:hover { background: rgba(255,255,255,0.05); }
+
+    /* Indicadores táctiles — solo en dispositivos touch */
+    .choice-hint {
+      display: none;
+    }
+    @media (hover: none) and (pointer: coarse) {
+      .choice-hint {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        position: absolute;
+        bottom: 18%;
+        left: 50%;
+        transform: translateX(-50%);
+        font-family: 'BebasNeue', sans-serif;
+        letter-spacing: 0.14em;
+        color: rgba(255,255,255,0.55);
+        font-size: clamp(18px, 3.5vw, 30px);
+        pointer-events: none;
+        user-select: none;
+        white-space: nowrap;
+      }
+      .choice-hint .hint-circle {
+        width: clamp(60px, 10vw, 90px);
+        height: clamp(60px, 10vw, 90px);
+        border-radius: 50%;
+        border: 2px solid rgba(255,255,255,0.35);
+        background: rgba(255,255,255,0.06);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: clamp(26px, 5vw, 44px);
+        animation: hintPulse 2.4s ease-in-out infinite;
+      }
+      @keyframes hintPulse {
+        0%, 100% { border-color: rgba(255,255,255,0.25); background: rgba(255,255,255,0.04); }
+        50%       { border-color: rgba(255,255,255,0.60); background: rgba(255,255,255,0.12); }
+      }
+      .choice-zone:active { background: rgba(255,255,255,0.08); }
+    }
 
     /* ── PANTALLA CABRA ── */
     #screen-goat {
@@ -1373,8 +1416,18 @@
     <div id="bifurcacion-bg"></div>
     <div id="decide-text">DECIDE.</div>
     <div id="bifurcacion-choices">
-      <div id="choice-left"  class="choice-zone"></div>
-      <div id="choice-right" class="choice-zone"></div>
+      <div id="choice-left"  class="choice-zone">
+        <div class="choice-hint">
+          <div class="hint-circle">&#9664;</div>
+          <span class="hint-label" data-i18n="choiceLeft">IZQUIERDA</span>
+        </div>
+      </div>
+      <div id="choice-right" class="choice-zone">
+        <div class="choice-hint">
+          <div class="hint-circle">&#9654;</div>
+          <span class="hint-label" data-i18n="choiceRight">DERECHA</span>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1433,6 +1486,19 @@
 
   <script src="game.js"></script>
   <script>
+    // Precarga temprana de frames del conejo al cargar la página.
+    // Esto garantiza que estén en caché antes de que startPhase1 los necesite,
+    // tanto en el flujo normal como en el de restart (que sólo tiene 100ms de margen).
+    const _earlyPreload = [
+      'assets/personajes/rabbit/emotions/standing_rabbit.png',
+      'assets/personajes/rabbit/normal_jump/rabbit_prepared_to_jump.png',
+      'assets/personajes/rabbit/normal_jump/rabbit_in_the_air.png',
+      'assets/personajes/rabbit/normal_jump/rabbit_landing.png',
+      'assets/personajes/rabbit/high_jump/rabbit_prepared_to_jump_high.png',
+      'assets/personajes/rabbit/high_jump/rabbit_jumping_high.png',
+      'assets/personajes/rabbit/high_jump/rabbit_landing2.png',
+    ].map(src => { const img = new Image(); img.src = src; return img; });
+
     // ══════════════════════════════════════
     // TRADUCCIONES
     // ══════════════════════════════════════
@@ -1452,6 +1518,8 @@
         skipPhone:       'Continuar sin celular',
         home:            '← INICIO',
         portrait:        'ROTA EL DISPOSITIVO',
+        choiceLeft:      'IZQUIERDA',
+        choiceRight:     'DERECHA',
       },
       en: {
         begin:           'START',
@@ -1468,6 +1536,8 @@
         skipPhone:       'Continue without phone',
         home:            '← START',
         portrait:        'ROTATE DEVICE',
+        choiceLeft:      'LEFT',
+        choiceRight:     'RIGHT',
       }
     };
 
