@@ -932,7 +932,7 @@ const GAME = (() => {
 
     framesReady = false;
     preload([FRAME_STAND, ...FRAMES_WALK, ...FRAMES_HIGH]).then(() => { framesReady = true; });
-    // Preload all phase backgrounds so they show instantly when phases start
+    // Preload all phase backgrounds and animated sprites so they show instantly
     preload([
       'assets/fondos/escenario1-pantano/capa1-fondo.png',
       'assets/fondos/escenario1-pantano/capa2-medio.png',
@@ -944,6 +944,9 @@ const GAME = (() => {
       'assets/fondos/escenario2-bosque/capa1-fondo.png',
       'assets/fondos/escenario2-bosque/capa2-medio.png',
       'assets/fondos/escenario2-bosque/capa3-frente.png',
+      // Left-path zombie frames (cached early so animation never cancels on Railway)
+      'assets/personajes/evil-rabbit/standing-rabbit.jpg',
+      'assets/personajes/evil-rabbit/walking-rabbit.jpg',
     ]);
     audioFootstep.volume = 0.55;
     fadeIn(audioPhase1, 0.65, 1500);
@@ -1078,6 +1081,12 @@ const GAME = (() => {
       zombieEl.src     = 'assets/personajes/evil-rabbit/standing-rabbit.jpg';
       zombieEl.style.display = 'block';
     }
+
+    // Preload zombie frames so Railway latency doesn't cancel in-flight src switches
+    preload([
+      'assets/personajes/evil-rabbit/standing-rabbit.jpg',
+      'assets/personajes/evil-rabbit/walking-rabbit.jpg',
+    ]);
 
     window.sendSMS('izquierda1');
 

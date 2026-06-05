@@ -1644,6 +1644,7 @@
         showControlsHint();
       }
       showHomeBtn();
+      window.sendSMS?.('welcome');
       introVideo.currentTime = 0;
       introVideo.play().catch(() => goToPhase1());
 
@@ -1668,7 +1669,9 @@
 
     // ── COMENZAR ──
     btnStart.addEventListener('click', () => {
-      transitionTo(() => showScreen(screenForm));
+      // Unlock introVideo for iOS (must be synchronous inside click gesture)
+      { const _p = introVideo.play(); if (_p) _p.then(() => { introVideo.pause(); introVideo.currentTime = 0; }).catch(() => {}); }
+      transitionTo(() => window.__startGame?.());
     });
 
     // ── Código de país: forzar "+" ──
@@ -1747,8 +1750,9 @@
     // Exponer para que game.js también pueda respetar el estado
     window.isMuted = () => muted;
 
-    // ── Modo sin celular ──
-    let noPhoneMode = false;
+    // ── Modo sin celular (siempre activo: mensajes en pantalla) ──
+    let noPhoneMode = true;
+    window.noPhoneMode = true;
 
     const SMS_TEXTS = {
       es: {
@@ -2233,12 +2237,7 @@
         if (hintShown >= hints.length) {
           document.getElementById('cp-hint-btn').disabled = true;
         }
-        if (window.noPhoneMode) {
-          hintEl.textContent = hints[idx];
-        } else {
-          hintEl.textContent = lang === 'en' ? 'Check your phone.' : 'Revisa tu teléfono.';
-          window.sendSMS(`codigo_pista${idx + 1}`);
-        }
+        hintEl.textContent = hints[idx];
       }
 
       if (codeAttempts <= 0) {
@@ -2258,12 +2257,7 @@
       hintShown++;
       if (hintShown >= hints.length) hintBtn.disabled = true;
 
-      if (window.noPhoneMode) {
-        hintEl.textContent = hints[idx];
-      } else {
-        hintEl.textContent = lang === 'en' ? 'Check your phone.' : 'Revisa tu teléfono.';
-        window.sendSMS(`codigo_pista${idx + 1}`);
-      }
+      hintEl.textContent = hints[idx];
     });
 
     document.getElementById('cp-confirm').addEventListener('click', handleCodeSubmit);
