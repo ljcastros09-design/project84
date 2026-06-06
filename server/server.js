@@ -19,7 +19,13 @@ const FROM   = process.env.TWILIO_PHONE_NUMBER;
 app.use(cors());
 app.use(express.json());
 
-// Sirve el juego desde la carpeta raíz del proyecto
+// Assets (imágenes, videos, audio) — caché de 30 días en el navegador
+app.use('/assets', express.static(path.join(STATIC_DIR, 'assets'), {
+  maxAge: '30d',
+  immutable: true,
+}));
+
+// Resto de archivos estáticos (index.html, game.js, etc.) — sin caché
 app.use(express.static(STATIC_DIR));
 
 // Fallback explícito para la raíz
