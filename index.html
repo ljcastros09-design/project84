@@ -1927,6 +1927,10 @@
         hint.style.transition = 'opacity 1.2s ease';
         hint.classList.remove('visible');
       }, 6000);
+
+      // Actualizar texto del hint de interacción según idioma
+      const interactHint = document.getElementById('interact-hint');
+      if (interactHint) interactHint.textContent = `[ E ]  ${L.act}`;
     }
 
     // ── sendSMS global: el juego lo llama con una clave ──
