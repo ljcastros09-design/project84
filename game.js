@@ -227,17 +227,24 @@ const GAME = (() => {
   let framesReady = false;
 
   // ── Helpers ───────────────────────────────────
-  function preload(paths) {
+  // Reintenta en caso de error (cancelación por latencia, hiccup de red)
+  // en vez de darla por cargada — si no, framesReady se activa con una
+  // imagen que nunca llegó a estar en caché.
+  function loadOne(src, retriesLeft = 2) {
     return new Promise(resolve => {
-      let n = paths.length;
-      if (!n) { resolve(); return; }
-      paths.forEach(src => {
-        const img = new Image();
-        _imgCache.push(img);
-        img.onload = img.onerror = () => { if (!--n) resolve(); };
-        img.src = src;
-      });
+      const img = new Image();
+      _imgCache.push(img);
+      img.onload  = () => resolve(img);
+      img.onerror = () => {
+        if (retriesLeft > 0) resolve(loadOne(src, retriesLeft - 1));
+        else { console.warn('[preload] no se pudo cargar:', src); resolve(img); }
+      };
+      img.src = src;
     });
+  }
+
+  function preload(paths) {
+    return Promise.all(paths.map(src => loadOne(src)));
   }
 
   function fadeOut(audio, ms = 800) {
