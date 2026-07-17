@@ -2297,6 +2297,11 @@
       en: { msg: 'You will no longer need to think.', btn: 'TRY AGAIN' },
     };
 
+    const GOOD_END_I18N = {
+      es: { msg: 'Siempre supiste que podías parar.<br>Todo sistema de control depende<br>de que tú decidas no hacerlo.', btn: 'VOLVER AL INICIO' },
+      en: { msg: 'You always knew you could stop.<br>Every system of control depends<br>on you choosing not to.', btn: 'BACK TO START' },
+    };
+
     // ── Final bueno ──────────────────────────────────────
     const screenGoodEnd  = document.getElementById('screen-good-ending');
     const endingVideo    = document.getElementById('ending-video');
@@ -2321,6 +2326,9 @@
       fade.classList.add('visible');
       setTimeout(() => {
         endingVideo.style.display = 'none';
+        const L = GOOD_END_I18N[lang] || GOOD_END_I18N.es;
+        goodEndMsg.innerHTML      = L.msg;
+        btnGoodRestart.textContent = L.btn;
         goodEndText.classList.add('visible');
         // Texto animado ya viene del CSS
         // Botón aparece tras 4 segundos
